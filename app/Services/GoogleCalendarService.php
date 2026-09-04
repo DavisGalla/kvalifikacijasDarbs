@@ -8,7 +8,7 @@ use App\Models\User;
 
 class GoogleCalendarService
 {
-    private const DEFAULT_MAX_RESULTS = 10;
+    private const MAX_RESULTS_PER_REQUEST = 2500;
 
     protected $client;
     protected $calendar;
@@ -72,16 +72,28 @@ class GoogleCalendarService
         return $this->calendar->events->insert('primary', $event);
     }
 
-    public function listEvents(?int $maxResults = null)
+    public function listEvents(?int $maxResults = null): array
     {
-        $results = $this->calendar->events->listEvents('primary', [
-            'maxResults' => $maxResults ?? self::DEFAULT_MAX_RESULTS,
-            'orderBy' => 'startTime',
-            'singleEvents' => true,
-            'timeMin' => (new \DateTime())->format(\DateTime::RFC3339),
-        ]);
+        $events = [];
+        $pageToken = null;
 
-        return $results->getItems();
+        do {
+            $parameters = [
+                'maxResults' => $maxResults ?? self::MAX_RESULTS_PER_REQUEST,
+                'orderBy' => 'startTime',
+                'singleEvents' => true,
+            ];
+
+            if ($pageToken) {
+                $parameters['pageToken'] = $pageToken;
+            }
+
+            $results = $this->calendar->events->listEvents('primary', $parameters);
+            $events = array_merge($events, $results->getItems());
+            $pageToken = $results->getNextPageToken();
+        } while ($pageToken);
+
+        return $events;
     }
 
     public function getEvent(string $eventId)
