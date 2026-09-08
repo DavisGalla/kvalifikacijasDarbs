@@ -94,6 +94,10 @@
             <x-responsive-nav-link :href="route('blog.index')" :active="request()->routeIs('blog.index')">
                 {{__("Blog")}}
             </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('competitions.index')" :active="request()->routeIs('competitions.index')">
+                {{__("Competitions")}}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->

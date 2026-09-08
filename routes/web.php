@@ -6,10 +6,12 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\PersonalBestController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CompetitionController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -39,6 +41,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+    Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');
+    Route::get('/competitions/create', [CompetitionController::class, 'create'])->name('competitions.create');
+    Route::post('/competitions', [CompetitionController::class, 'store'])->name('competitions.store');
+
+    
 });
 
 require __DIR__.'/auth.php';
