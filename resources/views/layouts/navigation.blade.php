@@ -27,6 +27,10 @@
                     <x-nav-link :href="route('blog.index')" :active="request()->routeIs('blog.index')">
                         {{__("Blog")}}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('competitions.index')" :active="request()->routeIs('competitions.index')">
+                        {{__("Competitions")}}
+                    </x-nav-link>
                 </div>
             </div>
 
