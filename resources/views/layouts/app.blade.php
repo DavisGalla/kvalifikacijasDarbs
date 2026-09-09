@@ -104,6 +104,12 @@
                     </div>
                 @endif
 
+                @if (session('warning'))
+                    <div class="mb-4 flex items-center gap-3 rounded-lg bg-yellow-50 p-4 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+                        <p class="flex-1 text-sm">{{ session('warning') }}</p>
+                    </div>
+                @endif
+
             </div>
 
             <!-- Page Content -->

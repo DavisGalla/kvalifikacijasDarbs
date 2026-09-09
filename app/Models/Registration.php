@@ -16,6 +16,7 @@ class Registration extends Model
         'registrant_id',
         'status',
         'registered_at',
+        'google_event_id',
     ];
 
     protected function casts(): array

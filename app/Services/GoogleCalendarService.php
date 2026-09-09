@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Calendar;
 use App\Models\User;
@@ -55,12 +56,12 @@ class GoogleCalendarService
         $this->calendar = new Calendar($this->client);
     }
 
-    public function createEvent($summary, $description, $startTime, $endTime)
+    public function createEvent($summary, $description, Carbon|string $startTime, Carbon|string $endTime)
     {
         $timezone = config('app.timezone', 'UTC');
 
-        $start = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $startTime, $timezone)->toIso8601String();
-        $end   = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $endTime,   $timezone)->toIso8601String();
+        $start = $this->toCalendarDateTime($startTime, $timezone);
+        $end = $this->toCalendarDateTime($endTime, $timezone);
 
         $event = new \Google\Service\Calendar\Event([
             'summary'     => $summary,
@@ -70,6 +71,14 @@ class GoogleCalendarService
         ]);
 
         return $this->calendar->events->insert('primary', $event);
+    }
+
+    private function toCalendarDateTime(Carbon|string $dateTime, string $timezone): string
+    {
+        return ($dateTime instanceof Carbon
+            ? $dateTime->copy()->setTimezone($timezone)
+            : Carbon::parse($dateTime, $timezone)
+        )->toIso8601String();
     }
 
     public function listEvents(?int $maxResults = null): array
