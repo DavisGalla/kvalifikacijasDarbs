@@ -31,6 +31,10 @@
                     <x-nav-link :href="route('competitions.index')" :active="request()->routeIs('competitions.index')">
                         {{__("Competitions")}}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('competitions.history')" :active="request()->routeIs('competitions.history')">
+                        {{ __('My history') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -101,6 +105,10 @@
 
             <x-responsive-nav-link :href="route('competitions.index')" :active="request()->routeIs('competitions.index')">
                 {{__("Competitions")}}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('competitions.history')" :active="request()->routeIs('competitions.history')">
+                {{ __('My history') }}
             </x-responsive-nav-link>
         </div>
 

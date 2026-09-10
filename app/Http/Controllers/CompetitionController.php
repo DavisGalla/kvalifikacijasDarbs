@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompetitionRequest;
 use App\Models\Competition;
+use App\Models\Registration;
 use App\Models\Sport;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,18 @@ class CompetitionController extends Controller
             ->get();
 
         return view('competitions.index', compact('competitions'));
+    }
+
+    public function history(): View
+    {
+        $registrations = Registration::query()
+            ->where('registrant_type', 'user')
+            ->where('registrant_id', Auth::id())
+            ->with(['competition.sport'])
+            ->latest('registered_at')
+            ->get();
+
+        return view('competitions.history', compact('registrations'));
     }
 
     public function show(Competition $competition): View

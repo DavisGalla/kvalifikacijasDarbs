@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');
+    Route::get('/competitions/history', [CompetitionController::class, 'history'])->name('competitions.history');
     Route::get('/competitions/create', [CompetitionController::class, 'create'])->name('competitions.create');
     Route::post('/competitions', [CompetitionController::class, 'store'])->name('competitions.store');
     Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->name('competitions.show');

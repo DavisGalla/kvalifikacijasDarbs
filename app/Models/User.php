@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\PersonalBest;
 
 class User extends Authenticatable
@@ -57,5 +58,10 @@ class User extends Authenticatable
     public function personalBests(): HasMany
     {
         return $this->hasMany(PersonalBest::class);
+    }
+
+    public function registrations(): MorphMany
+    {
+        return $this->morphMany(Registration::class, 'registrant');
     }
 }
