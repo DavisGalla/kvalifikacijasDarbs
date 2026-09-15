@@ -7,6 +7,7 @@ use App\Http\Controllers\PersonalBestController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\TeamController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,6 +50,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->name('competitions.show');
     Route::post('/competitions/{competition}/register', [CompetitionController::class, 'register'])->name('competitions.register');
     Route::delete('/competitions/{competition}/register', [CompetitionController::class, 'cancelRegistration'])->name('competitions.registration.cancel');
+
+    Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+    Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
+    Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+    Route::post('/teams/{team}/join', [TeamController::class, 'join'])->name('teams.join');
+    Route::delete('/teams/{team}/leave', [TeamController::class, 'leave'])->name('teams.leave');
+    Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+    Route::post('/teams/{team}/invite', [TeamController::class, 'invite'])->name('teams.invite');
+    Route::post('/team-invitations/{invitation}/accept', [TeamController::class, 'acceptInvitation'])->name('teams.invitations.accept');
+    Route::delete('/team-invitations/{invitation}', [TeamController::class, 'declineInvitation'])->name('teams.invitations.decline');
 
     
 });

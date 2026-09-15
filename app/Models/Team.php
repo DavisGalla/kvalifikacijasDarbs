@@ -12,12 +12,14 @@ class Team extends Model
         'name',
         'sport_id',
         'captain_id',
+        'is_public',
     ];
 
     protected function casts(): array
     {
         return [
             'created_at' => 'datetime',
+            'is_public' => 'boolean',
         ];
     }
 
@@ -39,5 +41,10 @@ class Team extends Model
     public function registrations()
     {
         return $this->morphMany(Registration::class, 'registrant');
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(TeamInvitation::class);
     }
 }

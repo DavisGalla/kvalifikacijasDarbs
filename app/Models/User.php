@@ -22,6 +22,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'google_id',
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function registrations(): MorphMany
     {
         return $this->morphMany(Registration::class, 'registrant');
+    }
+
+    public function teamInvitations()
+    {
+        return $this->hasMany(TeamInvitation::class, 'invited_user_id');
     }
 }
