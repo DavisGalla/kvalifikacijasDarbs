@@ -6,8 +6,10 @@ use App\Http\Requests\StoreCompetitionRequest;
 use App\Models\Competition;
 use App\Models\Registration;
 use App\Models\Sport;
+use App\Models\Team;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -33,8 +35,15 @@ class CompetitionController extends Controller
     public function history(): View
     {
         $registrations = Registration::query()
-            ->where('registrant_type', 'user')
-            ->where('registrant_id', Auth::id())
+            ->where(function ($query) {
+                $query->where(function ($query) {
+                    $query->where('registrant_type', 'user')
+                        ->where('registrant_id', Auth::id());
+                })->orWhere(function ($query) {
+                    $query->where('registrant_type', 'team')
+                        ->whereHas('registrant', fn ($query) => $query->where('captain_id', Auth::id()));
+                });
+            })
             ->with(['competition.sport'])
             ->latest('registered_at')
             ->get();
@@ -48,11 +57,24 @@ class CompetitionController extends Controller
 
         $competition->load('sport', 'organizer');
         $competition->load(['registrations' => function ($query) {
-            $query->where('registrant_type', 'user')
-                ->where('registrant_id', Auth::id());
+            $query->where(function ($query) {
+                $query->where('registrant_type', 'user')
+                    ->where('registrant_id', Auth::id())
+                    ->orWhere(function ($query) {
+                        $query->where('registrant_type', 'team')
+                            ->whereHas('registrant', fn ($query) => $query->where('captain_id', Auth::id()));
+                    });
+            });
         }]);
 
-        return view('competitions.show', compact('competition'));
+        $teams = $competition->registration_mode === 'team'
+            ? Team::where('captain_id', Auth::id())
+                ->where('sport_id', $competition->sport_id)
+                ->orderBy('name')
+                ->get()
+            : collect();
+
+        return view('competitions.show', compact('competition', 'teams'));
     }
 
     public function create(): View
@@ -74,7 +96,7 @@ class CompetitionController extends Controller
             ->with('success', 'Competition created successfully.');
     }
 
-    public function register(Competition $competition): RedirectResponse
+    public function register(Request $request, Competition $competition): RedirectResponse
     {
         if ($competition->status !== 'published') {
             return back()->with('error', 'This competition is not open for registration.');
@@ -84,10 +106,29 @@ class CompetitionController extends Controller
             return back()->with('error', 'Registration for this competition has closed.');
         }
 
-        $result = DB::transaction(function () use ($competition): string {
+        $team = null;
+        if ($competition->registration_mode === 'team') {
+            $validated = $request->validate([
+                'team_id' => ['required', 'integer', 'exists:teams,id'],
+            ]);
+
+            $team = Team::whereKey($validated['team_id'])
+                ->where('captain_id', Auth::id())
+                ->where('sport_id', $competition->sport_id)
+                ->first();
+
+            if (! $team) {
+                return back()->with('error', 'You can only register a team you captain for this sport.');
+            }
+        }
+
+        $registrantType = $team ? 'team' : 'user';
+        $registrantId = $team?->id ?? Auth::id();
+
+        $result = DB::transaction(function () use ($competition, $registrantType, $registrantId): string {
             $existingRegistration = $competition->registrations()
-                ->where('registrant_type', 'user')
-                ->where('registrant_id', Auth::id())
+                ->where('registrant_type', $registrantType)
+                ->where('registrant_id', $registrantId)
                 ->lockForUpdate()
                 ->first();
 
@@ -135,8 +176,8 @@ class CompetitionController extends Controller
         }
 
         $registration = $competition->registrations()
-            ->where('registrant_type', 'user')
-            ->where('registrant_id', Auth::id())
+            ->where('registrant_type', $registrantType)
+            ->where('registrant_id', $registrantId)
             ->first();
 
         if (! Auth::user()->google_access_token) {
@@ -165,11 +206,22 @@ class CompetitionController extends Controller
         return back()->with('success', 'Registration submitted successfully.');
     }
 
-    public function cancelRegistration(Competition $competition): RedirectResponse
+    public function cancelRegistration(Request $request, Competition $competition): RedirectResponse
     {
+        $teamId = $request->integer('team_id');
         $registration = $competition->registrations()
-            ->where('registrant_type', 'user')
-            ->where('registrant_id', Auth::id())
+            ->where(function ($query) use ($teamId) {
+                $query->where(function ($query) {
+                    $query->where('registrant_type', 'user')
+                        ->where('registrant_id', Auth::id());
+                })->orWhere(function ($query) use ($teamId) {
+                    $query->where('registrant_type', 'team')
+                        ->whereHas('registrant', function ($query) use ($teamId) {
+                            $query->where('captain_id', Auth::id())
+                                ->when($teamId, fn ($query) => $query->whereKey($teamId));
+                        });
+                });
+            })
             ->whereIn('status', ['pending', 'confirmed'])
             ->first();
 

@@ -31,6 +31,13 @@ class CompetitionForm
                 DateTimePicker::make('end_time')->required(),
                 DateTimePicker::make('registration_deadline')->required(),
                 TextInput::make('max_participants')->numeric()->minValue(1),
+                Select::make('registration_mode')
+                    ->options([
+                        'individual' => 'Individual registration',
+                        'team' => 'Team captain registration',
+                    ])
+                    ->default('individual')
+                    ->required(),
                 Select::make('status')
                     ->options([
                         'draft' => 'Draft',

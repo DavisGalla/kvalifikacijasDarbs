@@ -53,6 +53,12 @@
                             </div>
                         @endif
                         <div>
+                            <dt class="font-semibold text-gray-900 dark:text-gray-100">Registration type</dt>
+                            <dd class="mt-1 text-gray-600 dark:text-gray-400">
+                                {{ $competition->registration_mode === 'team' ? 'Team captains register their whole team' : 'Individual registration' }}
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="font-semibold text-gray-900 dark:text-gray-100">Organizer</dt>
                             <dd class="mt-1 text-gray-600 dark:text-gray-400">{{ $competition->organizer->name }}</dd>
                         </div>
@@ -63,21 +69,37 @@
                         @if ($registration && in_array($registration->status, ['pending', 'confirmed']))
                             <div class="flex items-center justify-between gap-4">
                                 <p class="text-sm font-semibold text-green-700">
-                                    You are {{ $registration->status }}.
+                                    {{ $registration->registrant_type === 'team' ? 'Your team is' : 'You are' }} {{ $registration->status }}.
                                 </p>
                                 <form method="POST" action="{{ route('competitions.registration.cancel', $competition) }}">
                                     @csrf
                                     @method('DELETE')
+                                    @if ($registration->registrant_type === 'team')
+                                        <input type="hidden" name="team_id" value="{{ $registration->registrant_id }}">
+                                    @endif
                                     <button type="submit" class="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">
                                         Leave competition
                                     </button>
                                 </form>
                             </div>
                         @else
-                            <form method="POST" action="{{ route('competitions.register', $competition) }}">
+                            <form method="POST" action="{{ route('competitions.register', $competition) }}" class="space-y-3">
                                 @csrf
-                                <button type="submit" class="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm font-semibold text-white hover:bg-gray-700">
-                                    Register for competition
+                                @if ($competition->registration_mode === 'team')
+                                    @if ($teams->isEmpty())
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">You need to captain a team for {{ $competition->sport->name }} before you can register.</p>
+                                    @else
+                                        <label for="team_id" class="block text-sm font-semibold text-gray-900 dark:text-gray-100">Choose your team</label>
+                                        <select name="team_id" id="team_id" required class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                            <option value="">Select a team</option>
+                                            @foreach ($teams as $team)
+                                                <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                @endif
+                                <button type="submit" @disabled($competition->registration_mode === 'team' && $teams->isEmpty()) class="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm font-semibold text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50">
+                                    {{ $competition->registration_mode === 'team' ? 'Register team for competition' : 'Register for competition' }}
                                 </button>
                             </form>
                         @endif

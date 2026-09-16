@@ -84,6 +84,16 @@
                     </div>
 
                     <div>
+                        <label for="registration_mode" class="block text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">Registration type</label>
+                        <select name="registration_mode" id="registration_mode" required
+                                class="w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                            <option value="individual" @selected(old('registration_mode', 'individual') === 'individual')>Individuals sign up separately</option>
+                            <option value="team" @selected(old('registration_mode') === 'team')>Team captains sign up their whole team</option>
+                        </select>
+                        <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Team captains can select one of their teams when registering.</p>
+                    </div>
+
+                    <div>
                         <label for="status" class="block text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">Status</label>
                         <select name="status" id="status" required
                                 class="w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">

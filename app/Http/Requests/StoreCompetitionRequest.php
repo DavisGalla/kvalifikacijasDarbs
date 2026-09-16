@@ -23,6 +23,7 @@ class StoreCompetitionRequest extends FormRequest
             'end_time' => ['required', 'date', 'after:start_time'],
             'registration_deadline' => ['required', 'date', 'before:start_time'],
             'max_participants' => ['nullable', 'integer', 'min:1'],
+            'registration_mode' => ['required', Rule::in(['individual', 'team'])],
             'status' => ['required', Rule::in(['draft', 'published'])],
         ];
     }

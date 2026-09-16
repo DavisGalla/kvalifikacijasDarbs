@@ -16,6 +16,7 @@ class Competition extends Model
         'end_time',
         'registration_deadline',
         'max_participants',
+        'registration_mode',
         'status',
     ];
 
