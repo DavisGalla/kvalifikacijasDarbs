@@ -40,8 +40,29 @@ class Competition extends Model
         return $this->hasMany(Registration::class);
     }
 
+    public function results()
+    {
+        return $this->hasMany(Result::class);
+    }
+
     public function sport()
     {
         return $this->belongsTo(Sport::class);
+    }
+
+    public function officials()
+    {
+        return $this->belongsToMany(User::class, 'competition_officials')
+            ->withPivot('assigned_at');
+    }
+
+    /**
+     * Whether the given user may enter or edit results for this competition:
+     * the organizer, or a user the organizer has assigned as an official.
+     */
+    public function isManagedBy(User $user): bool
+    {
+        return $this->organizer_id === $user->id
+            || $this->officials()->whereKey($user->id)->exists();
     }
 }

@@ -16,6 +16,7 @@ class SportsTable
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('slug')->searchable()->sortable(),
+                TextColumn::make('result_type')->badge()->sortable(),
             ])
             ->filters([
                 //

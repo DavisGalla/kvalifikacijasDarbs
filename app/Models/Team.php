@@ -43,6 +43,11 @@ class Team extends Model
         return $this->morphMany(Registration::class, 'registrant');
     }
 
+    public function results()
+    {
+        return $this->morphMany(Result::class, 'registrant');
+    }
+
     public function invitations()
     {
         return $this->hasMany(TeamInvitation::class);

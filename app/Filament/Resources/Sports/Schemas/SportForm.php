@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Sports\Schemas;
 
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 
 class SportForm
@@ -18,6 +19,15 @@ class SportForm
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
+                Select::make('result_type')
+                    ->label('Result type')
+                    ->options([
+                        'score' => 'Score (highest wins)',
+                        'time' => 'Time (fastest wins)',
+                    ])
+                    ->default('score')
+                    ->required()
+                    ->helperText('Determines how results are ranked and displayed for this sport.'),
             ]);
     }
 }

@@ -7,6 +7,8 @@ use App\Http\Controllers\PersonalBestController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\CompetitionOfficialController;
+use App\Http\Controllers\ResultController;
 use App\Http\Controllers\TeamController;
 
 Route::get('/', function () {
@@ -50,6 +52,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->name('competitions.show');
     Route::post('/competitions/{competition}/register', [CompetitionController::class, 'register'])->name('competitions.register');
     Route::delete('/competitions/{competition}/register', [CompetitionController::class, 'cancelRegistration'])->name('competitions.registration.cancel');
+
+    Route::post('/competitions/{competition}/officials', [CompetitionOfficialController::class, 'store'])->name('competitions.officials.store');
+    Route::delete('/competitions/{competition}/officials/{user}', [CompetitionOfficialController::class, 'destroy'])->name('competitions.officials.destroy');
+
+    Route::get('/competitions/{competition}/results', [ResultController::class, 'index'])->name('competitions.results.index');
+    Route::post('/competitions/{competition}/results', [ResultController::class, 'store'])->name('competitions.results.store');
+    Route::delete('/competitions/{competition}/results/{result}', [ResultController::class, 'destroy'])->name('competitions.results.destroy');
 
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
     Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');

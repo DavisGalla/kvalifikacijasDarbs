@@ -66,6 +66,17 @@ class User extends Authenticatable
         return $this->morphMany(Registration::class, 'registrant');
     }
 
+    public function results(): MorphMany
+    {
+        return $this->morphMany(Result::class, 'registrant');
+    }
+
+    public function officiatedCompetitions()
+    {
+        return $this->belongsToMany(Competition::class, 'competition_officials')
+            ->withPivot('assigned_at');
+    }
+
     public function teamInvitations()
     {
         return $this->hasMany(TeamInvitation::class, 'invited_user_id');
