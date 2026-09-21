@@ -15,7 +15,7 @@ class ResultController extends Controller
     {
         abort_unless($competition->status === 'published' || $competition->isManagedBy(Auth::user()), 404);
 
-        $competition->load('sport', 'organizer', 'officials');
+        $competition->load('sport', 'organizer', 'officials', 'winner');
 
         $registrations = $competition->registrations()
             ->where('status', 'confirmed')
@@ -28,9 +28,25 @@ class ResultController extends Controller
             ->get()
             ->keyBy(fn (Result $result) => "{$result->registrant_type}:{$result->registrant_id}");
 
+        $matchups = $competition->registration_mode === 'team'
+            ? $competition->matchups()->with('homeTeam', 'awayTeam')->latest()->get()
+            : collect();
+
+        $confirmedTeams = $competition->registration_mode === 'team'
+            ? $registrations->pluck('registrant')->filter()
+            : collect();
+
+        $winnerOptions = $registrations
+            ->filter(fn ($registration) => $registration->registrant !== null)
+            ->map(fn ($registration) => [
+                'type' => $registration->registrant_type,
+                'id' => $registration->registrant_id,
+                'name' => $registration->registrant->name,
+            ]);
+
         $canManage = $competition->isManagedBy(Auth::user());
 
-        return view('competitions.results', compact('competition', 'registrations', 'results', 'canManage'));
+        return view('competitions.results', compact('competition', 'registrations', 'results', 'matchups', 'confirmedTeams', 'winnerOptions', 'canManage'));
     }
 
     public function store(Request $request, Competition $competition): RedirectResponse

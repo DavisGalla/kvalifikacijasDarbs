@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Competition extends Model
 {
@@ -17,8 +19,18 @@ class Competition extends Model
         'registration_deadline',
         'max_participants',
         'registration_mode',
+        'winner_type',
+        'winner_id',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        Relation::morphMap([
+            'user' => User::class,
+            'team' => Team::class,
+        ]);
+    }
 
     protected function casts(): array
     {
@@ -43,6 +55,16 @@ class Competition extends Model
     public function results()
     {
         return $this->hasMany(Result::class);
+    }
+
+    public function matchups()
+    {
+        return $this->hasMany(Matchup::class);
+    }
+
+    public function winner(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function sport()

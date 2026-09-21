@@ -8,6 +8,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CompetitionOfficialController;
+use App\Http\Controllers\CompetitionWinnerController;
+use App\Http\Controllers\MatchupController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\TeamController;
 
@@ -59,6 +61,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/competitions/{competition}/results', [ResultController::class, 'index'])->name('competitions.results.index');
     Route::post('/competitions/{competition}/results', [ResultController::class, 'store'])->name('competitions.results.store');
     Route::delete('/competitions/{competition}/results/{result}', [ResultController::class, 'destroy'])->name('competitions.results.destroy');
+
+    Route::post('/competitions/{competition}/matchups', [MatchupController::class, 'store'])->name('competitions.matchups.store');
+    Route::delete('/competitions/{competition}/matchups/{matchup}', [MatchupController::class, 'destroy'])->name('competitions.matchups.destroy');
+
+    Route::put('/competitions/{competition}/winner', [CompetitionWinnerController::class, 'update'])->name('competitions.winner.update');
+    Route::delete('/competitions/{competition}/winner', [CompetitionWinnerController::class, 'destroy'])->name('competitions.winner.destroy');
 
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
     Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');

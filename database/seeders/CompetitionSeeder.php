@@ -3,7 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Competition;
+use App\Models\Result;
 use App\Models\Sport;
+use App\Models\Team;
+use App\Models\TeamMember;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +21,33 @@ class CompetitionSeeder extends Seeder
                 'password' => 'password',
             ],
         );
+
+        $official = User::firstOrCreate(
+            ['email' => 'official@example.com'],
+            [
+                'name' => 'Match Official',
+                'username' => 'matchofficial',
+                'password' => 'password',
+            ],
+        );
+
+        $players = collect([
+            ['name' => 'Alex Morgan', 'email' => 'player1@example.com', 'username' => 'player1'],
+            ['name' => 'Jordan Lee', 'email' => 'player2@example.com', 'username' => 'player2'],
+            ['name' => 'Sam Rivera', 'email' => 'player3@example.com', 'username' => 'player3'],
+            ['name' => 'Taylor Brooks', 'email' => 'player4@example.com', 'username' => 'player4'],
+            ['name' => 'Casey Nguyen', 'email' => 'player5@example.com', 'username' => 'player5'],
+            ['name' => 'Morgan Diaz', 'email' => 'player6@example.com', 'username' => 'player6'],
+            ['name' => 'Riley Chen', 'email' => 'player7@example.com', 'username' => 'player7'],
+            ['name' => 'Jamie Patel', 'email' => 'player8@example.com', 'username' => 'player8'],
+        ])->map(fn (array $player): User => User::firstOrCreate(
+            ['email' => $player['email']],
+            [
+                'name' => $player['name'],
+                'username' => $player['username'],
+                'password' => 'password',
+            ],
+        ));
 
         Competition::where('organizer_id', $organizer->id)
             ->whereIn('title', [
@@ -40,9 +70,44 @@ class CompetitionSeeder extends Seeder
             ['name' => 'Volleyball', 'slug' => 'volleyball'],
             ['name' => 'Rugby', 'slug' => 'rugby'],
         ])->mapWithKeys(function (array $sport): array {
-            $model = Sport::firstOrCreate(['slug' => $sport['slug']], ['name' => $sport['name']]);
+            $model = Sport::firstOrCreate(
+                ['slug' => $sport['slug']],
+                ['name' => $sport['name'], 'result_type' => 'score'],
+            );
 
             return [$sport['slug'] => $model];
+        });
+
+        // Two teams per sport, each with a captain and two members drawn from the player pool.
+        $teams = $sports->mapWithKeys(function (Sport $sport, string $slug) use ($players): array {
+            $teamNames = [
+                ucfirst($slug).' Falcons',
+                ucfirst($slug).' Wolves',
+            ];
+
+            $sportTeams = collect($teamNames)->values()->map(function (string $name, int $index) use ($sport, $players): Team {
+                $captain = $players[$index * 2];
+                $member = $players[$index * 2 + 1];
+
+                $team = Team::firstOrCreate(
+                    ['name' => $name, 'sport_id' => $sport->id],
+                    ['captain_id' => $captain->id, 'is_public' => true],
+                );
+
+                TeamMember::firstOrCreate(
+                    ['team_id' => $team->id, 'user_id' => $captain->id],
+                    ['role' => 'captain', 'joined_at' => now()],
+                );
+
+                TeamMember::firstOrCreate(
+                    ['team_id' => $team->id, 'user_id' => $member->id],
+                    ['role' => 'member', 'joined_at' => now()],
+                );
+
+                return $team;
+            });
+
+            return [$slug => $sportTeams];
         });
 
         $competitions = [
@@ -61,7 +126,7 @@ class CompetitionSeeder extends Seeder
         foreach ($competitions as $index => $competition) {
             $startTime = now()->addWeeks($index + 1)->setTime(9, 0);
 
-            Competition::updateOrCreate(
+            $record = Competition::updateOrCreate(
                 ['title' => $competition['title']],
                 [
                     'organizer_id' => $organizer->id,
@@ -72,9 +137,39 @@ class CompetitionSeeder extends Seeder
                     'end_time' => $startTime->copy()->addHours(2),
                     'registration_deadline' => $startTime->copy()->subDays(3),
                     'max_participants' => $competition['max_participants'],
+                    'registration_mode' => 'team',
                     'status' => 'published',
                 ],
             );
+
+            // Every official officiates the first three competitions.
+            if ($index < 3) {
+                $record->officials()->syncWithoutDetaching([$official->id => ['assigned_at' => now()]]);
+            }
+
+            // Register the two teams for this competition's sport.
+            $sportTeams = $teams[$competition['sport']];
+
+            foreach ($sportTeams as $team) {
+                $record->registrations()->updateOrCreate(
+                    ['registrant_type' => 'team', 'registrant_id' => $team->id],
+                    ['status' => 'confirmed', 'registered_at' => now()],
+                );
+            }
+
+            // Record a result for the first two competitions to demonstrate the leaderboard.
+            if ($index < 2) {
+                foreach ($sportTeams as $teamIndex => $team) {
+                    Result::updateOrCreate(
+                        [
+                            'competition_id' => $record->id,
+                            'registrant_type' => 'team',
+                            'registrant_id' => $team->id,
+                        ],
+                        ['value' => $teamIndex === 0 ? 3 : 1],
+                    );
+                }
+            }
         }
     }
 }

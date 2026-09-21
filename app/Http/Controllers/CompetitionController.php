@@ -24,6 +24,9 @@ class CompetitionController extends Controller
                 $query->where('registrant_type', 'user')
                     ->where('registrant_id', Auth::id());
             }])
+            ->withCount(['registrations' => function ($query) {
+                $query->whereIn('status', ['pending', 'confirmed']);
+            }])
             ->where('status', 'published')
             ->where('end_time', '>=', now())
             ->orderBy('start_time')
@@ -55,7 +58,7 @@ class CompetitionController extends Controller
     {
         abort_unless($competition->status === 'published', 404);
 
-        $competition->load('sport', 'organizer');
+        $competition->load('sport', 'organizer', 'winner');
         $competition->load(['registrations' => function ($query) {
             $query->where(function ($query) {
                 $query->where('registrant_type', 'user')
@@ -74,7 +77,13 @@ class CompetitionController extends Controller
                 ->get()
             : collect();
 
-        return view('competitions.show', compact('competition', 'teams'));
+        $participants = $competition->registrations()
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->with('registrant')
+            ->latest('registered_at')
+            ->get();
+
+        return view('competitions.show', compact('competition', 'teams', 'participants'));
     }
 
     public function create(): View

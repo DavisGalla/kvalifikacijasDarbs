@@ -29,6 +29,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </a>
+                    @if ($competition->winner)
+                        <p class="mt-4 text-sm font-semibold text-amber-700 dark:text-amber-400">
+                            🏆 Winner: {{ $competition->winner->name }}
+                        </p>
+                    @endif
                 </div>
 
                 <div class="px-8 py-8">
@@ -70,6 +75,39 @@
                             <dd class="mt-1 text-gray-600 dark:text-gray-400">{{ $competition->organizer->name }}</dd>
                         </div>
                     </dl>
+
+                    <div class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+                        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            Who's signed up
+                            <span class="font-normal text-gray-500 dark:text-gray-400">({{ $participants->count() }})</span>
+                        </h2>
+
+                        @if ($participants->isEmpty())
+                            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">No one has registered yet. Be the first!</p>
+                        @else
+                            <ul class="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
+                                @foreach ($participants as $participant)
+                                    <li class="flex items-center justify-between gap-4 py-2.5 text-sm">
+                                        <span class="text-gray-800 dark:text-gray-200">
+                                            {{ $participant->registrant->name }}
+                                            @if ($participant->registrant_type === 'team')
+                                                <span class="text-gray-400 dark:text-gray-500">(team)</span>
+                                            @endif
+                                        </span>
+                                        @if ($participant->status === 'pending')
+                                            <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                                Pending
+                                            </span>
+                                        @else
+                                            <span class="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-green-700">
+                                                Confirmed
+                                            </span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
 
                     @php($registration = $competition->registrations->first())
                     <div class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">

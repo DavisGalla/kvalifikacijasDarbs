@@ -42,6 +42,10 @@
 									<dt class="inline font-medium text-gray-900">Place:</dt>
 									<dd class="inline">{{ $competition->location }}</dd>
 								</div>
+								<div>
+									<dt class="inline font-medium text-gray-900">Signed up:</dt>
+									<dd class="inline">{{ $competition->registrations_count }} {{ Str::plural($competition->registration_mode === 'team' ? 'team' : 'participant', $competition->registrations_count) }}</dd>
+								</div>
 							</dl>
 						</a>
 					@endforeach
