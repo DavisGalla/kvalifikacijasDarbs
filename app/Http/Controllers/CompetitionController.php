@@ -95,9 +95,16 @@ class CompetitionController extends Controller
 
     public function store(StoreCompetitionRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
+
+        if ($validated['registration_mode'] !== 'team') {
+            $validated['min_team_members'] = null;
+            $validated['max_team_members'] = null;
+        }
+
         Competition::create([
             'organizer_id' => Auth::id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return redirect()
@@ -128,6 +135,16 @@ class CompetitionController extends Controller
 
             if (! $team) {
                 return back()->with('error', 'You can only register a team you captain for this sport.');
+            }
+
+            $memberCount = $team->members()->count();
+
+            if ($competition->min_team_members !== null && $memberCount < $competition->min_team_members) {
+                return back()->with('error', "Your team needs at least {$competition->min_team_members} members to register.");
+            }
+
+            if ($competition->max_team_members !== null && $memberCount > $competition->max_team_members) {
+                return back()->with('error', "Your team has too many members. This competition allows at most {$competition->max_team_members}.");
             }
         }
 

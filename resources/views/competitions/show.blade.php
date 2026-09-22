@@ -70,6 +70,20 @@
                                 {{ $competition->registration_mode === 'team' ? 'Team captains register their whole team' : 'Individual registration' }}
                             </dd>
                         </div>
+                        @if ($competition->registration_mode === 'team' && ($competition->min_team_members || $competition->max_team_members))
+                            <div>
+                                <dt class="font-semibold text-gray-900 dark:text-gray-100">Team size</dt>
+                                <dd class="mt-1 text-gray-600 dark:text-gray-400">
+                                    @if ($competition->min_team_members && $competition->max_team_members)
+                                        {{ $competition->min_team_members }}–{{ $competition->max_team_members }} members
+                                    @elseif ($competition->min_team_members)
+                                        At least {{ $competition->min_team_members }} members
+                                    @else
+                                        Up to {{ $competition->max_team_members }} members
+                                    @endif
+                                </dd>
+                            </div>
+                        @endif
                         <div>
                             <dt class="font-semibold text-gray-900 dark:text-gray-100">Organizer</dt>
                             <dd class="mt-1 text-gray-600 dark:text-gray-400">{{ $competition->organizer->name }}</dd>

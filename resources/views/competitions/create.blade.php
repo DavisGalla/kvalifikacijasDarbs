@@ -25,7 +25,8 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('competitions.store') }}" class="px-8 py-8 space-y-5">
+                <form method="POST" action="{{ route('competitions.store') }}" class="px-8 py-8 space-y-5"
+                      x-data="{ registrationMode: '{{ old('registration_mode', 'individual') }}' }">
                     @csrf
 
                     <div>
@@ -85,12 +86,25 @@
 
                     <div>
                         <label for="registration_mode" class="block text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">Registration type</label>
-                        <select name="registration_mode" id="registration_mode" required
+                        <select name="registration_mode" id="registration_mode" required x-model="registrationMode"
                                 class="w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
                             <option value="individual" @selected(old('registration_mode', 'individual') === 'individual')>Individuals sign up separately</option>
                             <option value="team" @selected(old('registration_mode') === 'team')>Team captains sign up their whole team</option>
                         </select>
                         <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Team captains can select one of their teams when registering.</p>
+                    </div>
+
+                    <div class="grid gap-4 md:grid-cols-2" x-show="registrationMode === 'team'">
+                        <div>
+                            <label for="min_team_members" class="block text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">Minimum team members</label>
+                            <input type="number" name="min_team_members" id="min_team_members" min="1" value="{{ old('min_team_members') }}" placeholder="e.g. 3"
+                                   class="w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                        </div>
+                        <div>
+                            <label for="max_team_members" class="block text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">Maximum team members</label>
+                            <input type="number" name="max_team_members" id="max_team_members" min="1" value="{{ old('max_team_members') }}" placeholder="e.g. 8"
+                                   class="w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                        </div>
                     </div>
 
                     <div>

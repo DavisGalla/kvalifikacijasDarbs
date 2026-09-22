@@ -19,6 +19,8 @@ class Competition extends Model
         'registration_deadline',
         'max_participants',
         'registration_mode',
+        'min_team_members',
+        'max_team_members',
         'winner_type',
         'winner_id',
         'status',
@@ -39,6 +41,8 @@ class Competition extends Model
             'end_time' => 'datetime',
             'registration_deadline' => 'datetime',
             'max_participants' => 'integer',
+            'min_team_members' => 'integer',
+            'max_team_members' => 'integer',
         ];
     }
 

@@ -36,7 +36,9 @@
                                     @if ($competition->sport)
                                         <p class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $competition->sport->name }}</p>
                                     @endif
-                                    <h2 class="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">{{ $competition->title }}</h2>
+                                    <a href="{{ route('competitions.results.index', $competition) }}" class="mt-1 block text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                        {{ $competition->title }}
+                                    </a>
                                     <dl class="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                         <div>
                                             <dt class="inline font-semibold">Competition:</dt>

@@ -111,16 +111,16 @@ class CompetitionSeeder extends Seeder
         });
 
         $competitions = [
-            ['title' => 'City Football Cup', 'sport' => 'football', 'location' => 'Municipal Stadium', 'max_participants' => 160],
-            ['title' => 'Riverside Football League', 'sport' => 'football', 'location' => 'Riverside Sports Ground', 'max_participants' => 120],
-            ['title' => 'Downtown Basketball Classic', 'sport' => 'basketball', 'location' => 'Central Sports Hall', 'max_participants' => 96],
-            ['title' => 'Community Basketball Cup', 'sport' => 'basketball', 'location' => 'Westside Arena', 'max_participants' => 80],
-            ['title' => 'Summer Volleyball Open', 'sport' => 'volleyball', 'location' => 'Beachside Courts', 'max_participants' => 72],
-            ['title' => 'Indoor Volleyball League', 'sport' => 'volleyball', 'location' => 'North Recreation Centre', 'max_participants' => 96],
-            ['title' => 'County Rugby Sevens', 'sport' => 'rugby', 'location' => 'County Rugby Club', 'max_participants' => 140],
-            ['title' => 'Autumn Rugby Cup', 'sport' => 'rugby', 'location' => 'Pine Ridge Grounds', 'max_participants' => 120],
-            ['title' => 'University Football Challenge', 'sport' => 'football', 'location' => 'University Stadium', 'max_participants' => 180],
-            ['title' => 'Regional Basketball Finals', 'sport' => 'basketball', 'location' => 'Regional Arena', 'max_participants' => 128],
+            ['title' => 'City Football Cup', 'sport' => 'football', 'location' => 'Municipal Stadium', 'max_participants' => 160, 'min_team_members' => 2, 'max_team_members' => 11],
+            ['title' => 'Riverside Football League', 'sport' => 'football', 'location' => 'Riverside Sports Ground', 'max_participants' => 120, 'min_team_members' => 2, 'max_team_members' => 11],
+            ['title' => 'Downtown Basketball Classic', 'sport' => 'basketball', 'location' => 'Central Sports Hall', 'max_participants' => 96, 'min_team_members' => 2, 'max_team_members' => 5],
+            ['title' => 'Community Basketball Cup', 'sport' => 'basketball', 'location' => 'Westside Arena', 'max_participants' => 80, 'min_team_members' => 2, 'max_team_members' => 5],
+            ['title' => 'Summer Volleyball Open', 'sport' => 'volleyball', 'location' => 'Beachside Courts', 'max_participants' => 72, 'min_team_members' => 2, 'max_team_members' => 6],
+            ['title' => 'Indoor Volleyball League', 'sport' => 'volleyball', 'location' => 'North Recreation Centre', 'max_participants' => 96, 'min_team_members' => 2, 'max_team_members' => 6],
+            ['title' => 'County Rugby Sevens', 'sport' => 'rugby', 'location' => 'County Rugby Club', 'max_participants' => 140, 'min_team_members' => 2, 'max_team_members' => 7],
+            ['title' => 'Autumn Rugby Cup', 'sport' => 'rugby', 'location' => 'Pine Ridge Grounds', 'max_participants' => 120, 'min_team_members' => 2, 'max_team_members' => 15],
+            ['title' => 'University Football Challenge', 'sport' => 'football', 'location' => 'University Stadium', 'max_participants' => 180, 'min_team_members' => 2, 'max_team_members' => 11],
+            ['title' => 'Regional Basketball Finals', 'sport' => 'basketball', 'location' => 'Regional Arena', 'max_participants' => 128, 'min_team_members' => 2, 'max_team_members' => 5],
         ];
 
         foreach ($competitions as $index => $competition) {
@@ -138,6 +138,8 @@ class CompetitionSeeder extends Seeder
                     'registration_deadline' => $startTime->copy()->subDays(3),
                     'max_participants' => $competition['max_participants'],
                     'registration_mode' => 'team',
+                    'min_team_members' => $competition['min_team_members'],
+                    'max_team_members' => $competition['max_team_members'],
                     'status' => 'published',
                 ],
             );

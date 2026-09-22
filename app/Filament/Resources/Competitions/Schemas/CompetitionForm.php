@@ -7,6 +7,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 
 class CompetitionForm
 {
@@ -37,7 +38,19 @@ class CompetitionForm
                         'team' => 'Team captain registration',
                     ])
                     ->default('individual')
+                    ->live()
                     ->required(),
+                TextInput::make('min_team_members')
+                    ->numeric()
+                    ->minValue(1)
+                    ->visible(fn (Get $get) => $get('registration_mode') === 'team')
+                    ->required(fn (Get $get) => $get('registration_mode') === 'team'),
+                TextInput::make('max_team_members')
+                    ->numeric()
+                    ->minValue(1)
+                    ->visible(fn (Get $get) => $get('registration_mode') === 'team')
+                    ->required(fn (Get $get) => $get('registration_mode') === 'team')
+                    ->gte('min_team_members'),
                 Select::make('status')
                     ->options([
                         'draft' => 'Draft',

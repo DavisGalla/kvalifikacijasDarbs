@@ -24,6 +24,8 @@ class StoreCompetitionRequest extends FormRequest
             'registration_deadline' => ['required', 'date', 'before:start_time'],
             'max_participants' => ['nullable', 'integer', 'min:1'],
             'registration_mode' => ['required', Rule::in(['individual', 'team'])],
+            'min_team_members' => ['nullable', 'integer', 'min:1', 'required_if:registration_mode,team'],
+            'max_team_members' => ['nullable', 'integer', 'min:1', 'gte:min_team_members', 'required_if:registration_mode,team'],
             'status' => ['required', Rule::in(['draft', 'published'])],
         ];
     }
