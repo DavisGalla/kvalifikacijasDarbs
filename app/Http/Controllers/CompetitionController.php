@@ -158,10 +158,7 @@ class CompetitionController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (
-                in_array($existingRegistration?->status, ['pending', 'confirmed'], true)
-                && $existingRegistration->google_event_id
-            ) {
+            if (in_array($existingRegistration?->status, ['pending', 'confirmed'], true)) {
                 return 'already_registered';
             }
 
@@ -184,8 +181,8 @@ class CompetitionController extends Controller
             }
 
             $competition->registrations()->create([
-                'registrant_type' => 'user',
-                'registrant_id' => Auth::id(),
+                'registrant_type' => $registrantType,
+                'registrant_id' => $registrantId,
                 'status' => 'pending',
                 'registered_at' => now(),
             ]);
@@ -205,6 +202,10 @@ class CompetitionController extends Controller
             ->where('registrant_type', $registrantType)
             ->where('registrant_id', $registrantId)
             ->first();
+
+        if (! $registration) {
+            return back()->with('error', 'Registration could not be saved. Please try again.');
+        }
 
         if (! Auth::user()->google_access_token) {
             return back()->with('success', 'Registration submitted successfully. Connect Google Calendar to add it to your calendar.');

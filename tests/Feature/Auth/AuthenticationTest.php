@@ -2,13 +2,13 @@
 
 use App\Models\User;
 
-test('login screen can be rendered', function () {
+test('login screen redirects to google sign in', function () {
     $response = $this->get('/login');
 
-    $response->assertStatus(200);
+    $response->assertRedirect('/auth/google');
 });
 
-test('users can authenticate using the login screen', function () {
+test('posting to login redirects to google sign in', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -16,8 +16,8 @@ test('users can authenticate using the login screen', function () {
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertGuest();
+    $response->assertRedirect(route('google.redirect'));
 });
 
 test('users can not authenticate with invalid password', function () {

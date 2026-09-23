@@ -4,6 +4,7 @@ use App\Models\PersonalBest;
 use App\Models\Competition;
 use App\Models\Registration;
 use App\Models\Sport;
+use App\Models\Team;
 use App\Models\User;
 
 it('allows an authenticated user to create a blog post', function () {
@@ -152,4 +153,101 @@ it('shows only the authenticated users competition registration history', functi
         ->assertSee('Canceled')
         ->assertSee('Finished')
         ->assertDontSee('Forest Trail');
+});
+
+it('registers a team for a team competition end to end', function () {
+    $captain = User::factory()->create();
+    $organizer = User::factory()->create();
+    $sport = Sport::create(['name' => 'Football', 'slug' => 'football']);
+    $team = Team::create([
+        'name' => 'Riga Lions',
+        'sport_id' => $sport->id,
+        'captain_id' => $captain->id,
+        'is_public' => true,
+    ]);
+    $competition = Competition::create([
+        'organizer_id' => $organizer->id,
+        'sport_id' => $sport->id,
+        'title' => 'City Cup',
+        'description' => 'A team tournament.',
+        'location' => 'Central Stadium',
+        'start_time' => now()->addDays(10),
+        'end_time' => now()->addDays(10)->addHours(3),
+        'registration_deadline' => now()->addDays(5),
+        'registration_mode' => 'team',
+        'status' => 'published',
+    ]);
+
+    $this->actingAs($captain)
+        ->post(route('competitions.register', $competition), ['team_id' => $team->id])
+        ->assertSessionHas('success');
+
+    $this->assertDatabaseHas('registrations', [
+        'competition_id' => $competition->id,
+        'registrant_type' => 'team',
+        'registrant_id' => $team->id,
+        'status' => 'pending',
+    ]);
+    $this->assertDatabaseMissing('registrations', [
+        'competition_id' => $competition->id,
+        'registrant_type' => 'user',
+    ]);
+
+    $this->actingAs($captain)
+        ->post(route('competitions.register', $competition), ['team_id' => $team->id])
+        ->assertSessionHas('error', 'You are already registered for this competition.');
+    expect(Registration::where('competition_id', $competition->id)->count())->toBe(1);
+
+    $this->actingAs($captain)
+        ->get(route('competitions.show', $competition))
+        ->assertSee('Leave competition');
+
+    $this->actingAs($captain)
+        ->delete(route('competitions.registration.cancel', $competition), ['team_id' => $team->id])
+        ->assertSessionHas('success');
+    $this->assertDatabaseHas('registrations', [
+        'registrant_type' => 'team',
+        'registrant_id' => $team->id,
+        'status' => 'cancelled',
+    ]);
+
+    $this->actingAs($captain)
+        ->post(route('competitions.register', $competition), ['team_id' => $team->id])
+        ->assertSessionHas('success');
+    $this->assertDatabaseHas('registrations', [
+        'registrant_type' => 'team',
+        'registrant_id' => $team->id,
+        'status' => 'pending',
+    ]);
+    expect(Registration::where('competition_id', $competition->id)->count())->toBe(1);
+});
+
+it('does not let a user register a team they do not captain', function () {
+    $captain = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $sport = Sport::create(['name' => 'Football', 'slug' => 'football']);
+    $team = Team::create([
+        'name' => 'Riga Lions',
+        'sport_id' => $sport->id,
+        'captain_id' => $captain->id,
+        'is_public' => true,
+    ]);
+    $competition = Competition::create([
+        'organizer_id' => $captain->id,
+        'sport_id' => $sport->id,
+        'title' => 'City Cup',
+        'description' => 'A team tournament.',
+        'location' => 'Central Stadium',
+        'start_time' => now()->addDays(10),
+        'end_time' => now()->addDays(10)->addHours(3),
+        'registration_deadline' => now()->addDays(5),
+        'registration_mode' => 'team',
+        'status' => 'published',
+    ]);
+
+    $this->actingAs($otherUser)
+        ->post(route('competitions.register', $competition), ['team_id' => $team->id])
+        ->assertSessionHas('error');
+
+    $this->assertDatabaseCount('registrations', 0);
 });

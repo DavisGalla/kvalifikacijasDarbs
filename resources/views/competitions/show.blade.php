@@ -123,7 +123,7 @@
                         @endif
                     </div>
 
-                    @php($registration = $competition->registrations->first())
+                    @php($registration = $competition->registrations->first(fn ($registration) => in_array($registration->status, ['pending', 'confirmed'])))
                     <div class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
                         @if ($registration && in_array($registration->status, ['pending', 'confirmed']))
                             <div class="flex items-center justify-between gap-4">
