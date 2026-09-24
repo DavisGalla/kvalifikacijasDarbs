@@ -33,18 +33,21 @@ class AuthController extends Controller
             }
         }
 
-        $user = User::updateOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name'                      => $googleUser->getName(),
-                'google_id'                 => $googleUser->getId(),
-                'avatar'                    => $googleUser->getAvatar(),
-                'google_access_token'       => $googleUser->token,
-                'google_refresh_token'      => $googleUser->refreshToken,
-                'google_token_expires_at'   => now()->addSeconds($googleUser->expiresIn),
-                'password'                  => bcrypt(str()->random(24)),
-            ]
-        );
+        $user = User::firstOrNew(['email' => $googleUser->getEmail()]);
+
+        if (! $user->exists) {
+            $user->password = bcrypt(str()->random(24));
+        }
+
+        $user->fill([
+            'name'                    => $googleUser->getName(),
+            'google_id'               => $googleUser->getId(),
+            'avatar'                  => $googleUser->getAvatar(),
+            'google_access_token'     => $googleUser->token,
+            // Google only returns a refresh token on first consent; keep the stored one otherwise.
+            'google_refresh_token'    => $googleUser->refreshToken ?? $user->google_refresh_token,
+            'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
+        ])->save();
 
         Auth::login($user);
 

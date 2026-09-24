@@ -105,6 +105,20 @@ class TeamController extends Controller
             return back()->with('error', 'You cannot leave this team.');
         }
 
+        $remaining = $team->members()->count() - 1;
+
+        $blocking = $team->registrations()
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereHas('competition', fn ($query) => $query
+                ->where('start_time', '>', now())
+                ->whereNotNull('min_team_members')
+                ->where('min_team_members', '>', $remaining))
+            ->exists();
+
+        if ($blocking) {
+            return back()->with('error', 'Leaving would drop the team below the minimum size of a competition it is registered for.');
+        }
+
         $member->delete();
 
         return redirect()->route('teams.index')->with('success', 'You left the team.');

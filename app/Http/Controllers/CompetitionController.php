@@ -250,11 +250,17 @@ class CompetitionController extends Controller
                 });
             })
             ->whereIn('status', ['pending', 'confirmed'])
-            ->first();
+            ->get();
 
-        if (! $registration) {
+        if ($registration->isEmpty()) {
             return back()->with('error', 'You are not registered for this competition.');
         }
+
+        if ($registration->count() > 1) {
+            return back()->with('error', 'Please specify which registration to cancel.');
+        }
+
+        $registration = $registration->first();
 
         if (now()->greaterThanOrEqualTo($competition->start_time)) {
             return back()->with('error', 'You cannot leave a competition after it has started.');

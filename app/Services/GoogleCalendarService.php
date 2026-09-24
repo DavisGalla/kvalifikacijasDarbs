@@ -32,9 +32,10 @@ class GoogleCalendarService
                 'refresh_token' => $user->google_refresh_token,
             ];
             
-            // Add expiration if available
+            // Add expiration if available (seconds remaining, measured from now)
             if ($user->google_token_expires_at) {
-                $tokenData['expires_in'] = $user->google_token_expires_at->diffInSeconds(now());
+                $tokenData['created'] = now()->timestamp;
+                $tokenData['expires_in'] = max(0, $user->google_token_expires_at->timestamp - now()->timestamp);
             }
             
             $this->client->setAccessToken($tokenData);
