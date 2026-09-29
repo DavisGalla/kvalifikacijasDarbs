@@ -24,21 +24,22 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Type your email address, :email, to confirm you would like to permanently delete your account.', ['email' => auth()->user()->email]) }}
             </p>
 
             <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+                <x-input-label for="email_confirmation" value="{{ __('Email') }}" class="sr-only" />
 
                 <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
+                    id="email_confirmation"
+                    name="email_confirmation"
+                    type="text"
                     class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
+                    placeholder="{{ auth()->user()->email }}"
+                    autocomplete="off"
                 />
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                <x-input-error :messages="$errors->userDeletion->get('email_confirmation')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">

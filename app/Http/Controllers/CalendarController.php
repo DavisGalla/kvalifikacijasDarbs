@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCalendarEventRequest;
+use App\Models\User;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
@@ -26,6 +27,11 @@ class CalendarController extends Controller
                 'user_id' => $user->id,
                 'exception' => $e
             ]);
+
+            if ($this->requiresReconnect($e)) {
+                return $this->reconnectGoogle($user);
+            }
+
             return back()->with('error', 'Failed to retrieve calendar events.');
         }
     
@@ -77,6 +83,10 @@ class CalendarController extends Controller
                 'exception' => $e,
             ]);
 
+            if ($this->requiresReconnect($e)) {
+                return $this->reconnectGoogle($user);
+            }
+
             return redirect()->route('calendar.index')->with('error', 'Failed to load event details.');
         }
     }
@@ -101,7 +111,16 @@ class CalendarController extends Controller
 
             return redirect()->route('calendar.index')->with('success', 'Event created successfully!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to create event: ' . $e->getMessage());
+            Log::error('Calendar Create Error: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'exception' => $e,
+            ]);
+
+            if ($this->requiresReconnect($e)) {
+                return $this->reconnectGoogle($user);
+            }
+
+            return back()->withInput()->with('error', 'Failed to create event. Please try again.');
         }
     }
 
@@ -125,7 +144,33 @@ class CalendarController extends Controller
                 'exception' => $e,
             ]);
 
+            if ($this->requiresReconnect($e)) {
+                return $this->reconnectGoogle($user);
+            }
+
             return back()->with('error', 'Failed to delete event.');
         }
+    }
+
+    /**
+     * A 401 from the Google API means the stored credentials are dead (expired
+     * access token with no usable refresh token, or access revoked). There is
+     * no way to recover without the user reconnecting their account.
+     */
+    private function requiresReconnect(\Exception $e): bool
+    {
+        return $e instanceof \Google\Service\Exception && $e->getCode() === 401;
+    }
+
+    private function reconnectGoogle(User $user): RedirectResponse
+    {
+        $user->update([
+            'google_access_token' => null,
+            'google_refresh_token' => null,
+            'google_token_expires_at' => null,
+        ]);
+
+        return redirect()->route('google.redirect')
+            ->with('error', 'Your Google Calendar connection has expired. Please reconnect.');
     }
 }

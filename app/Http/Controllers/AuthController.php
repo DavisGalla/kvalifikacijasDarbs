@@ -15,6 +15,10 @@ class AuthController extends Controller
     {
         return Socialite::driver('google')
             ->scopes(['https://www.googleapis.com/auth/calendar'])
+            // Without these, Google never issues a refresh token, so once the
+            // short-lived access token expires the calendar integration breaks
+            // permanently with no way to recover except manually reconnecting.
+            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
             ->redirect();
     }
 

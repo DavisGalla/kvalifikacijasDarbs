@@ -59,7 +59,7 @@ test('user can delete their account', function () {
     $response = $this
         ->actingAs($user)
         ->delete('/profile', [
-            'password' => 'password',
+            'email_confirmation' => $user->email,
         ]);
 
     $response
@@ -70,18 +70,18 @@ test('user can delete their account', function () {
     $this->assertNull($user->fresh());
 });
 
-test('correct password must be provided to delete account', function () {
+test('matching email must be provided to delete account', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->from('/profile')
         ->delete('/profile', [
-            'password' => 'wrong-password',
+            'email_confirmation' => 'wrong@example.com',
         ]);
 
     $response
-        ->assertSessionHasErrorsIn('userDeletion', 'password')
+        ->assertSessionHasErrorsIn('userDeletion', 'email_confirmation')
         ->assertRedirect('/profile');
 
     $this->assertNotNull($user->fresh());
