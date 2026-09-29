@@ -5,7 +5,7 @@
 
             {{-- Page heading --}}
             <div class="mb-10">
-                <h1 class="text-5xl font-serif font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">
+                <h1 class="text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">
                     Personal Bests
                 </h1>
                 <div class="mt-3 h-px w-16 bg-amber-400"></div>
@@ -53,7 +53,7 @@
 
                         <button
                             type="submit"
-                            class="h-11 px-6 text-sm font-semibold rounded-xl bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-95 transition-all duration-150 whitespace-nowrap"
+                            class="h-11 px-6 text-sm font-semibold rounded-xl bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150 whitespace-nowrap"
                         >
                             + Add
                         </button>
@@ -81,7 +81,7 @@
                                 </div>
 
                                 <div class="flex items-baseline gap-1">
-                                    <span class="text-2xl font-serif font-bold text-gray-900 dark:text-gray-100">{{ $best->weight + 0 }}</span>
+                                    <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $best->weight + 0 }}</span>
                                     <span class="text-xs font-medium text-gray-400 dark:text-gray-500">kg</span>
                                 </div>
 
@@ -121,7 +121,7 @@
                                     />
                                     <button
                                         type="submit"
-                                        class="h-9 px-4 text-sm font-semibold rounded-xl bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-95 transition-all duration-150"
+                                        class="h-9 px-4 text-sm font-semibold rounded-xl bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150"
                                     >Save</button>
                                     <button
                                         type="button"

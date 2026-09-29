@@ -1,18 +1,12 @@
 <x-app-layout>
     <div class="min-h-screen bg-stone-50 dark:bg-gray-900 py-12 px-4">
         <div class="max-w-3xl mx-auto">
-            <a href="{{ route('competitions.show', $competition) }}"
-               class="inline-flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-150 mb-8 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to {{ $competition->title }}
-            </a>
+            <x-back-link :href="route('competitions.show', $competition)">Back to {{ $competition->title }}</x-back-link>
 
             <article class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden">
                 <div class="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-700">
                     <p class="text-sm font-semibold text-indigo-600">{{ $competition->sport->name }}</p>
-                    <h1 class="mt-2 text-3xl font-serif font-bold text-gray-900 dark:text-gray-100">
+                    <h1 class="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                         Results — {{ $competition->title }}
                     </h1>
                 </div>

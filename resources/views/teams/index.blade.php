@@ -1,33 +1,40 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Teams</h2>
-            <a href="{{ route('teams.create') }}" class="rounded-full bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">
-                Create team
-            </a>
-        </div>
-    </x-slot>
+    <div class="min-h-screen bg-stone-50 dark:bg-gray-900">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {{-- Page heading --}}
+            <div class="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">Teams</h1>
+                    <div class="mt-3 h-px w-16 bg-amber-400"></div>
+                </div>
+                <a href="{{ route('teams.create') }}"
+                   class="inline-flex items-center gap-2 bg-gray-800 dark:bg-gray-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150 w-fit">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Create team
+                </a>
+            </div>
+
             @if ($invitations->isNotEmpty())
-                <section class="mb-8 rounded-2xl bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-gray-900">Team invitations</h2>
+                <section class="mb-8 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Team invitations</h2>
                     <div class="mt-4 space-y-3">
                         @foreach ($invitations as $invitation)
-                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                <p class="text-sm text-gray-700">
+                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
+                                <p class="text-sm text-gray-700 dark:text-gray-300">
                                     <strong>{{ $invitation->inviter->name }}</strong> invited you to join <strong>{{ $invitation->team->name }}</strong>.
                                 </p>
                                 <div class="flex gap-2">
                                     <form method="POST" action="{{ route('teams.invitations.accept', $invitation) }}">
                                         @csrf
-                                        <button type="submit" class="rounded-xl bg-gray-800 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-700">Accept</button>
+                                        <button type="submit" class="rounded-xl bg-gray-800 dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-700 dark:hover:bg-gray-600 transition">Accept</button>
                                     </form>
                                     <form method="POST" action="{{ route('teams.invitations.decline', $invitation) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">Decline</button>
+                                        <button type="submit" class="rounded-xl border border-red-200 dark:border-red-800 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">Decline</button>
                                     </form>
                                 </div>
                             </div>
@@ -37,24 +44,28 @@
             @endif
 
             @if ($teams->isEmpty())
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 text-gray-600">
-                    No teams are available yet.
+                <div class="text-center py-20">
+                    <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4 text-2xl">👥</div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500">No teams are available yet.</p>
                 </div>
             @else
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($teams as $team)
-                        <a href="{{ route('teams.show', $team) }}" class="block bg-white shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                        <a href="{{ route('teams.show', $team) }}"
+                           class="group block bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200">
                             <div class="flex items-start justify-between gap-4">
-                                <h3 class="text-xl font-semibold text-gray-900">{{ $team->name }}</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">
+                                    {{ $team->name }}
+                                </h3>
                                 @if ($team->is_public)
-                                    <span class="text-sm text-green-600">Public</span>
+                                    <x-status-badge color="green">Public</x-status-badge>
                                 @else
-                                    <span class="text-sm text-gray-500">Invite only</span>
+                                    <x-status-badge color="gray">Invite only</x-status-badge>
                                 @endif
                             </div>
-                            <p class="mt-3 text-sm text-indigo-600">{{ $team->sport->name }}</p>
-                            <p class="mt-2 text-sm text-gray-600">Captain: {{ $team->captain->name }}</p>
-                            <p class="mt-1 text-sm text-gray-600">{{ $team->members_count }} {{ Str::plural('member', $team->members_count) }}</p>
+                            <p class="mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $team->sport->name }}</p>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Captain: {{ $team->captain->name }}</p>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $team->members_count }} {{ Str::plural('member', $team->members_count) }}</p>
                         </a>
                     @endforeach
                 </div>

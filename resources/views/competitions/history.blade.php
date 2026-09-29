@@ -22,7 +22,7 @@
             @if ($registrations->isEmpty())
                 <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-xl p-8 text-center">
                     <p class="text-gray-600 dark:text-gray-400">You have not signed up for any competitions yet.</p>
-                    <a href="{{ route('competitions.index') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition">
+                    <a href="{{ route('competitions.index') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:bg-slate-800 transition-all duration-150">
                         Browse competitions
                     </a>
                 </div>
@@ -59,9 +59,9 @@
                                     @php($isCompetitionCancelled = $competition->status === 'cancelled')
                                     @php($isCompetitionFinished = $competition->end_time->isPast())
                                     @php($isRegistrationCancelled = $registration->status === 'cancelled')
-                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize {{ $isCompetitionCancelled || $isCompetitionFinished || $isRegistrationCancelled ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' }}">
+                                    <x-status-badge :color="$isCompetitionCancelled || $isCompetitionFinished || $isRegistrationCancelled ? 'gray' : 'green'" class="capitalize">
                                         {{ $isCompetitionCancelled ? 'Canceled' : ($isRegistrationCancelled ? 'Left' : ($isCompetitionFinished ? 'Finished' : $registration->status)) }}
-                                    </span>
+                                    </x-status-badge>
                                     <a href="{{ route('competitions.show', $competition) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                                         View competition
                                     </a>

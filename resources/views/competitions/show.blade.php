@@ -1,26 +1,18 @@
 <x-app-layout>
     <div class="min-h-screen bg-stone-50 dark:bg-gray-900 py-12 px-4">
         <div class="max-w-3xl mx-auto">
-            <a href="{{ route('competitions.index') }}"
-               class="inline-flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-150 mb-8 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to competitions
-            </a>
+            <x-back-link :href="route('competitions.index')">Back to competitions</x-back-link>
 
             <article class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden">
                 <div class="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-700">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-sm font-semibold text-indigo-600">{{ $competition->sport->name }}</p>
-                            <h1 class="mt-2 text-3xl font-serif font-bold text-gray-900 dark:text-gray-100">
+                            <p class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $competition->sport->name }}</p>
+                            <h1 class="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                                 {{ $competition->title }}
                             </h1>
                         </div>
-                        <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-700">
-                            Published
-                        </span>
+                        <x-status-badge color="green">Published</x-status-badge>
                     </div>
                     <a href="{{ route('competitions.results.index', $competition) }}"
                        class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
@@ -109,13 +101,9 @@
                                             @endif
                                         </span>
                                         @if ($participant->status === 'pending')
-                                            <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                                                Pending
-                                            </span>
+                                            <x-status-badge color="amber">Pending</x-status-badge>
                                         @else
-                                            <span class="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-green-700">
-                                                Confirmed
-                                            </span>
+                                            <x-status-badge color="green">Confirmed</x-status-badge>
                                         @endif
                                     </li>
                                 @endforeach

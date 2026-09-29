@@ -6,7 +6,7 @@
             {{-- Page title + New Post button --}}
             <div class="mb-12 flex items-end justify-between">
                 <div>
-                    <h1 class="text-5xl font-serif font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">Latest Posts</h1>
+                    <h1 class="text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">Latest Posts</h1>
                     <div class="mt-3 h-px w-16 bg-amber-400"></div>
                 </div>
                 <a href="/blog/create"
@@ -24,7 +24,7 @@
                     <a href="/blog/{{ $post->id }}"
                         class="group flex items-start justify-between gap-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-7 py-6 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm transition-all duration-200 first:rounded-t-2xl last:rounded-b-2xl">
                         <div class="flex-1 min-w-0">
-                            <h2 class="text-xl font-serif font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 truncate">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 truncate">
                                 {{ $post->title }}
                             </h2>
                             <p class="mt-1 text-sm text-gray-400 dark:text-gray-500 font-medium">by {{ $post->user->name }}</p>

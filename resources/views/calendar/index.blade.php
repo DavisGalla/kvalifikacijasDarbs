@@ -5,12 +5,12 @@
             {{-- Page heading --}}
             <div class="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 class="text-4xl sm:text-5xl font-serif font-bold text-white leading-tight tracking-tight">Calendar</h1>
+                    <h1 class="text-4xl sm:text-5xl font-bold text-white leading-tight tracking-tight">Calendar</h1>
                     <p class="mt-2 text-sm text-slate-200">Click a day to add training. Click an event to view details.</p>
                     <div class="mt-3 h-px w-16 bg-amber-400"></div>
                 </div>
                 <a href="{{ route('calendar.create') }}"
-                   class="inline-flex items-center gap-2 bg-gray-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-600 active:scale-95 transition-all duration-150">
+                   class="inline-flex items-center gap-2 bg-gray-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>

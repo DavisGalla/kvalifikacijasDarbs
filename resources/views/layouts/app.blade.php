@@ -9,34 +9,44 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=lora:400,500,600,700|dm-sans:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        <style>
-            .font-serif { font-family: 'Lora', Georgia, serif; }
-            body { font-family: 'DM Sans', sans-serif; }
-        </style>
-
-        @stack('styles') 
+        @stack('styles')
     </head>
-    <body class="antialiased">
-        <div class="min-h-screen bg-stone-50 dark:bg-gray-900">
+    <body class="font-sans antialiased">
+        <div class="flex min-h-screen bg-stone-50 dark:bg-gray-900" x-data="{ mobileNavOpen: false }">
 
             @include('layouts.navigation')
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                    <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+            <div class="flex-1 flex flex-col min-w-0">
 
-            <!-- Flash Messages -->
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Mobile top bar -->
+                <div class="lg:hidden sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/70 dark:border-gray-800">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 font-bold text-lg text-gray-900 dark:text-gray-100">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        SportWeb
+                    </a>
+                    <button @click="mobileNavOpen = true" class="p-2 -mr-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Page Heading -->
+                @isset($header)
+                    <header class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                        <div class="px-4 sm:px-6 lg:px-8 py-5">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
+
+                <!-- Flash Messages -->
+                <div class="max-w-4xl px-4 sm:px-6 lg:px-8">
 
                 @if ($errors->any())
                     <div
@@ -110,13 +120,14 @@
                     </div>
                 @endif
 
+                </div>
+
+                <!-- Page Content -->
+                <main class="flex-1">
+                    {{ $slot }}
+                </main>
+
             </div>
-
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-
         </div>
     </body>
 </html>

@@ -5,14 +5,9 @@
         <div class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
             <div class="max-w-3xl mx-auto px-6 pt-16 pb-12">
 
-                <a href="/blog" class="inline-flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-150 mb-8 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    All posts
-                </a>
+                <x-back-link href="/blog">All posts</x-back-link>
 
-                <h1 class="text-4xl sm:text-5xl font-serif font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">
+                <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">
                     {{ $post->title }}
                 </h1>
 
@@ -46,7 +41,7 @@
         <div class="max-w-3xl mx-auto px-6 py-12">
 
             {{-- Post body --}}
-            <div class="prose prose-stone dark:prose-invert prose-lg max-w-none font-serif text-gray-700 dark:text-gray-300 leading-relaxed">
+            <div class="prose prose-stone dark:prose-invert prose-lg max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
                 {!! nl2br(e($post->content)) !!}
             </div>
 
@@ -59,7 +54,7 @@
 
             {{-- Comments section --}}
             <div>
-                <h2 class="text-xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                     Comments
                     <span class="text-base font-sans font-normal text-gray-400 dark:text-gray-500 ml-2">({{ $post->comments->count() }})</span>
                 </h2>
@@ -116,7 +111,7 @@
                         <div class="flex justify-end mt-3">
                             <button
                                 type="submit"
-                                class="bg-gray-800 dark:bg-gray-700 text-white text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-95 transition-all duration-150">
+                                class="bg-gray-800 dark:bg-gray-700 text-white text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150">
                                 Post Comment
                             </button>
                         </div>

@@ -12,6 +12,7 @@ use App\Http\Controllers\CompetitionWinnerController;
 use App\Http\Controllers\MatchupController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\TeamController;
+use App\Models\TeamMember;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,7 +20,18 @@ Route::get('/', function () {
 
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = auth()->user();
+
+    $stats = [
+        'personalBests' => $user->personalBests()->count(),
+        'upcomingCompetitions' => $user->registrations()
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereHas('competition', fn ($query) => $query->where('start_time', '>', now()))
+            ->count(),
+        'teams' => TeamMember::where('user_id', $user->id)->count(),
+    ];
+
+    return view('dashboard', ['stats' => $stats]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
