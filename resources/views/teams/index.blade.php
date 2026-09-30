@@ -25,6 +25,7 @@
                             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
                                 <p class="text-sm text-gray-700 dark:text-gray-300">
                                     <strong>{{ $invitation->inviter->name }}</strong> invited you to join <strong>{{ $invitation->team->name }}</strong>.
+                                    <x-status-badge :status="$invitation->status" class="ml-2" />
                                 </p>
                                 <div class="flex gap-2">
                                     <form method="POST" action="{{ route('teams.invitations.accept', $invitation) }}">
@@ -44,15 +45,11 @@
             @endif
 
             @if ($teams->isEmpty())
-                <div class="text-center py-20">
-                    <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4 text-2xl">👥</div>
-                    <p class="text-sm text-gray-400 dark:text-gray-500">No teams are available yet.</p>
-                </div>
+                <x-empty-state icon="👥" message="No teams yet. Create one and invite your training partners." cta="Create team" :href="route('teams.create')" />
             @else
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($teams as $team)
-                        <a href="{{ route('teams.show', $team) }}"
-                           class="group block bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200">
+                        <x-card :href="route('teams.show', $team)">
                             <div class="flex items-start justify-between gap-4">
                                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">
                                     {{ $team->name }}
@@ -66,7 +63,7 @@
                             <p class="mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $team->sport->name }}</p>
                             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Captain: {{ $team->captain->name }}</p>
                             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $team->members_count }} {{ Str::plural('member', $team->members_count) }}</p>
-                        </a>
+                        </x-card>
                     @endforeach
                 </div>
             @endif

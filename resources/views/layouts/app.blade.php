@@ -7,6 +7,8 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        @include('layouts.theme-script')
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -29,11 +31,14 @@
                         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
                         SportWeb
                     </a>
+                    <div class="flex items-center gap-1">
+                    <x-theme-toggle />
                     <button @click="mobileNavOpen = true" class="p-2 -mr-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
+                    </div>
                 </div>
 
                 <!-- Page Heading -->

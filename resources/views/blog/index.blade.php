@@ -19,6 +19,9 @@
             </div>
 
             {{-- Post list --}}
+            @if ($posts->isEmpty())
+                <x-empty-state icon="✍️" message="No posts yet. Share your first training update with the community." cta="Write a post" :href="route('blog.create')" />
+            @endif
             <div class="space-y-px">
                 @foreach($posts as $post)
                     <a href="/blog/{{ $post->id }}"

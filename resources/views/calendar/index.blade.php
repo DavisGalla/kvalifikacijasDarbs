@@ -1,16 +1,16 @@
 <x-app-layout>
-    <div class="min-h-screen bg-slate-900">
+    <div class="min-h-screen bg-stone-50 dark:bg-gray-900">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
 
             {{-- Page heading --}}
             <div class="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 class="text-4xl sm:text-5xl font-bold text-white leading-tight tracking-tight">Calendar</h1>
-                    <p class="mt-2 text-sm text-slate-200">Click a day to add training. Click an event to view details.</p>
+                    <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight tracking-tight">Calendar</h1>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-slate-300">Click a day to add training. Click an event to view details.</p>
                     <div class="mt-3 h-px w-16 bg-amber-400"></div>
                 </div>
                 <a href="{{ route('calendar.create') }}"
-                   class="inline-flex items-center gap-2 bg-gray-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150">
+                   class="inline-flex items-center gap-2 bg-gray-800 dark:bg-gray-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 shadow-sm hover:shadow-md active:scale-95 transition-all duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -19,7 +19,7 @@
             </div>
 
             {{-- Calendar card --}}
-            <div class="rounded-3xl border border-slate-700 shadow-sm p-4 sm:p-6 lg:p-8">
+            <div class="rounded-3xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-transparent shadow-sm p-4 sm:p-6 lg:p-8">
                 <div id="calendar"></div>
             </div>
 

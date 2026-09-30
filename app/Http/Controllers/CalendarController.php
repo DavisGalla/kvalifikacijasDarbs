@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCalendarEventRequest;
 use App\Models\User;
 use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -16,7 +17,7 @@ class CalendarController extends Controller
         $user = auth()->user();
     
         if (!$user->google_access_token) {
-            return redirect()->route('google.redirect')->with('error', 'Please connect your Google Calendar first.');
+            return redirect()->route('google.calendar.redirect')->with('error', 'Please connect your Google Calendar first.');
         }
     
         try {
@@ -59,7 +60,7 @@ class CalendarController extends Controller
 
         // parabauda vai lietotājs ir atļavis piekļuvi pie google kalendāra
         if (!$user->google_access_token) {
-            return redirect()->route('google.redirect')->with('error', 'Please connect your Google Calendar first.');
+            return redirect()->route('google.calendar.redirect')->with('error', 'Please connect your Google Calendar first.');
         }
 
         try {
@@ -96,7 +97,7 @@ class CalendarController extends Controller
         $user = auth()->user();
 
         if (!$user->google_access_token) {
-            return redirect()->route('google.redirect')->with('error', 'Please connect your Google Calendar first.');
+            return redirect()->route('google.calendar.redirect')->with('error', 'Please connect your Google Calendar first.');
         }
 
         try {
@@ -108,6 +109,8 @@ class CalendarController extends Controller
                 $validated['start_time'],
                 $validated['end_time']
             );
+
+            Cache::forget("dashboard.calendar.{$user->id}");
 
             return redirect()->route('calendar.index')->with('success', 'Event created successfully!');
         } catch (\Exception $e) {
@@ -129,12 +132,13 @@ class CalendarController extends Controller
         $user = auth()->user();
 
         if (!$user->google_access_token) {
-            return redirect()->route('google.redirect')->with('error', 'Please connect your Google Calendar first.');
+            return redirect()->route('google.calendar.redirect')->with('error', 'Please connect your Google Calendar first.');
         }
 
         try {
             $service = new GoogleCalendarService($user);
             $service->deleteEvent($eventId);
+            Cache::forget("dashboard.calendar.{$user->id}");
 
             return redirect()->route('calendar.index')->with('success', 'Event deleted successfully.');
         } catch (\Exception $e) {
@@ -170,7 +174,7 @@ class CalendarController extends Controller
             'google_token_expires_at' => null,
         ]);
 
-        return redirect()->route('google.redirect')
+        return redirect()->route('google.calendar.redirect')
             ->with('error', 'Your Google Calendar connection has expired. Please reconnect.');
     }
 }

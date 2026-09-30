@@ -18,41 +18,43 @@
             </div>
 
             @if ($competitions->isEmpty())
-                <div class="text-center py-20">
-                    <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4 text-2xl">🏆</div>
-                    <p class="text-sm text-gray-400 dark:text-gray-500">No upcoming competitions are available right now.</p>
-                </div>
+                <x-empty-state icon="🏆"
+                    message="No upcoming competitions yet. Be the first to organise one."
+                    cta="Create competition" :href="route('competitions.create')" />
             @else
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($competitions as $competition)
-                        <a href="{{ route('competitions.show', $competition) }}"
-                           class="group block bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200">
-                            <div class="flex items-start justify-between gap-4">
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">
-                                    {{ $competition->title }}
-                                </h3>
-                                @if ($competition->sport)
-                                    <span class="shrink-0 rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
-                                        {{ $competition->sport->name }}
-                                    </span>
-                                @endif
+                        <x-card :href="route('competitions.show', $competition)">
+                            <div class="flex items-start justify-between gap-3">
+                                <x-sport-icon :sport="$competition->sport" />
+                                <x-status-badge :status="$competition->displayStatus()" />
                             </div>
 
+                            <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">
+                                {{ $competition->title }}
+                            </h3>
+                            @if ($competition->sport)
+                                <p class="mt-1 text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ $competition->sport->name }}</p>
+                            @endif
+
                             <dl class="mt-5 space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                                <div>
-                                    <dt class="inline font-medium text-gray-900 dark:text-gray-200">Start:</dt>
-                                    <dd class="inline">{{ $competition->start_time->format('M j, Y g:i A') }}</dd>
+                                <div class="flex items-center gap-2">
+                                    <dt class="sr-only">Date</dt>
+                                    <svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 2v4m8-4v4M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></svg>
+                                    <dd>{{ $competition->start_time->format('M j, Y g:i A') }}</dd>
                                 </div>
-                                <div>
-                                    <dt class="inline font-medium text-gray-900 dark:text-gray-200">Place:</dt>
-                                    <dd class="inline">{{ $competition->location }}</dd>
+                                <div class="flex items-center gap-2">
+                                    <dt class="sr-only">Location</dt>
+                                    <svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11Zm0-8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+                                    <dd>{{ $competition->location }}</dd>
                                 </div>
-                                <div>
-                                    <dt class="inline font-medium text-gray-900 dark:text-gray-200">Signed up:</dt>
-                                    <dd class="inline">{{ $competition->registrations_count }} {{ Str::plural($competition->registration_mode === 'team' ? 'team' : 'participant', $competition->registrations_count) }}</dd>
+                                <div class="flex items-center gap-2">
+                                    <dt class="sr-only">Signed up</dt>
+                                    <svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m5-2.13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>
+                                    <dd>{{ $competition->registrations_count }} {{ Str::plural($competition->registration_mode === 'team' ? 'team' : 'participant', $competition->registrations_count) }}</dd>
                                 </div>
                             </dl>
-                        </a>
+                        </x-card>
                     @endforeach
                 </div>
             @endif

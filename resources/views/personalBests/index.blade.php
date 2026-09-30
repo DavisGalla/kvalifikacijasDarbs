@@ -1,7 +1,8 @@
 <x-app-layout>
 
     <div class="min-h-screen bg-stone-50 dark:bg-gray-900">
-        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14"
+             x-data="{ tab: window.location.hash === '#workout' ? 'workout' : 'pbs' }">
 
             {{-- Page heading --}}
             <div class="mb-10">
@@ -9,11 +10,29 @@
                     Personal Bests
                 </h1>
                 <div class="mt-3 h-px w-16 bg-amber-400"></div>
-                <p class="mt-3 text-sm text-gray-400 dark:text-gray-500">Track your strongest lifts and watch them grow.</p>
+                <p class="mt-3 text-sm text-gray-400 dark:text-gray-500">Track your strongest lifts and the weights you train with.</p>
             </div>
 
+            <datalist id="exercise-suggestions">
+                @foreach ($exercises as $name)
+                    <option value="{{ $name }}"></option>
+                @endforeach
+            </datalist>
+
+            {{-- View switcher --}}
+            <div class="mb-8 inline-flex rounded-full bg-gray-100 dark:bg-gray-800 p-1" role="tablist">
+                <button type="button" role="tab" @click="tab = 'pbs'; history.replaceState(null, '', '#pbs')"
+                        :class="tab === 'pbs' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'"
+                        class="rounded-full px-5 py-2 text-sm font-semibold transition">Personal bests</button>
+                <button type="button" role="tab" @click="tab = 'workout'; history.replaceState(null, '', '#workout')"
+                        :class="tab === 'workout' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'"
+                        class="rounded-full px-5 py-2 text-sm font-semibold transition">Working weights</button>
+            </div>
+
+            <div x-show="tab === 'pbs'">
+
             {{-- Add new PB card --}}
-            <div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-8">
+            <div id="pb-form" class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-8">
                 <div class="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700">
                     <p class="text-xs font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500">Add new PB</p>
                 </div>
@@ -63,10 +82,8 @@
 
             {{-- PB list --}}
             @if ($bests->isEmpty())
-                <div class="text-center py-20">
-                    <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4 text-2xl">🏋️</div>
-                    <p class="text-sm text-gray-400 dark:text-gray-500">No PBs yet — add your first one above.</p>
-                </div>
+                <x-empty-state icon="🏋️" message="No personal bests yet. Log your first lift and start tracking your progress."
+                    cta="Add your first PB" href="#pb-form" />
             @else
                 <div class="flex flex-col gap-px">
                     @foreach ($bests as $best)
@@ -80,9 +97,12 @@
                                     <p class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ $best->exercise }}</p>
                                 </div>
 
-                                <div class="flex items-baseline gap-1">
+                                <x-sparkline :values="$best->entries->pluck('weight')" class="hidden sm:block" />
+
+                                <div class="flex items-baseline gap-1.5">
                                     <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $best->weight + 0 }}</span>
                                     <span class="text-xs font-medium text-gray-400 dark:text-gray-500">kg</span>
+                                    <x-trend :delta="$best->trend()" />
                                 </div>
 
                                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
@@ -135,6 +155,12 @@
                     @endforeach
                 </div>
             @endif
+
+            </div>
+
+            <div x-show="tab === 'workout'" x-cloak>
+                @include('personalBests._workout')
+            </div>
 
         </div>
     </div>

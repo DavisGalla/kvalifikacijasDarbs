@@ -61,6 +61,16 @@ class User extends Authenticatable
         return $this->hasMany(PersonalBest::class);
     }
 
+    public function workoutDays(): HasMany
+    {
+        return $this->hasMany(WorkoutDay::class)->orderBy('id');
+    }
+
+    public function workoutLogs(): HasMany
+    {
+        return $this->hasMany(WorkoutLog::class);
+    }
+
     public function registrations(): MorphMany
     {
         return $this->morphMany(Registration::class, 'registrant');

@@ -92,7 +92,7 @@
                     </div>
                     <p class="mt-4 font-semibold text-amber-800 dark:text-amber-400">Connect Google Calendar</p>
                     <p class="mt-1 text-sm text-amber-700/80 dark:text-amber-400/70">One-time setup to start planning sessions.</p>
-                    <a href="/auth/google" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-amber-700 dark:text-amber-400 hover:gap-2 transition-all">
+                    <a href="{{ route('google.calendar.redirect') }}" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-amber-700 dark:text-amber-400 hover:gap-2 transition-all">
                         Connect now
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -100,6 +100,75 @@
                     </a>
                 </div>
             @endif
+        </div>
+
+        <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {{-- Recent personal bests with trend --}}
+            <x-card>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal bests</h2>
+                    <a href="{{ route('pbs.index') }}" class="text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline">View all</a>
+                </div>
+
+                @if ($recentBests->isEmpty())
+                    <x-empty-state icon="🏋️" class="py-8" message="No personal bests yet. Log your first lift to start tracking progress."
+                        cta="Add a PB" :href="route('pbs.index')" />
+                @else
+                    <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
+                        @foreach ($recentBests as $best)
+                            <li class="flex items-center gap-4 py-3">
+                                <p class="flex-1 min-w-0 truncate font-medium text-gray-900 dark:text-gray-100">{{ $best->exercise }}</p>
+                                <x-sparkline :values="$best->entries->pluck('weight')" :width="72" :height="24" />
+                                <div class="flex items-baseline gap-1.5 w-28 justify-end">
+                                    <span class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ $best->weight + 0 }}</span>
+                                    <span class="text-xs text-gray-400">kg</span>
+                                    <x-trend :delta="$best->trend()" />
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-card>
+
+            {{-- Upcoming calendar events --}}
+            <x-card>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Upcoming events</h2>
+                    @if ($calendarConnected)
+                        <a href="{{ route('calendar.index') }}" class="text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline">Open calendar</a>
+                    @endif
+                </div>
+
+                @if (! $calendarConnected)
+                    <x-empty-state icon="📅" class="py-8" message="Connect Google Calendar to see your upcoming sessions and events here."
+                        cta="Connect Google Calendar" :href="route('google.calendar.redirect')" />
+                @elseif ($calendarError)
+                    <x-empty-state icon="⚠️" class="py-8" message="We couldn't load your calendar right now. Try again in a moment, or reconnect if it keeps happening."
+                        cta="Reconnect" :href="route('google.calendar.redirect')" />
+                @elseif (count($calendarEvents) === 0)
+                    <x-empty-state icon="📅" class="py-8" message="Nothing scheduled. Plan your next training session."
+                        cta="Add an event" :href="route('calendar.create')" />
+                @else
+                    <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
+                        @foreach ($calendarEvents as $event)
+                            @php($start = \Carbon\Carbon::parse($event['start']))
+                            <li>
+                                <a href="{{ route('calendar.show', $event['id']) }}" class="flex items-center gap-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 -mx-2 px-2 rounded-lg transition">
+                                    <div class="w-12 shrink-0 rounded-xl bg-amber-50 dark:bg-amber-900/20 py-1.5 text-center">
+                                        <p class="text-[10px] font-semibold uppercase text-amber-600 dark:text-amber-400">{{ $start->format('M') }}</p>
+                                        <p class="text-lg font-bold leading-none text-gray-900 dark:text-gray-100">{{ $start->format('j') }}</p>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="truncate font-medium text-gray-900 dark:text-gray-100">{{ $event['title'] }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $event['all_day'] ? 'All day' : $start->format('D, g:i A') }}</p>
+                                    </div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-card>
         </div>
 
         {{-- Quick links --}}

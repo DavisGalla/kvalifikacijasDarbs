@@ -83,7 +83,19 @@ class CompetitionController extends Controller
             ->latest('registered_at')
             ->get();
 
-        return view('competitions.show', compact('competition', 'teams', 'participants'));
+        $results = $competition->results()
+            ->with('registrant')
+            ->orderByRaw('position IS NULL, position')
+            ->get()
+            ->each->setRelation('competition', $competition);
+
+        $matchups = $competition->registration_mode === 'team'
+            ? $competition->matchups()->with('homeTeam', 'awayTeam')->latest()->get()
+            : collect();
+
+        $canManage = $competition->isManagedBy(Auth::user());
+
+        return view('competitions.show', compact('competition', 'teams', 'participants', 'results', 'matchups', 'canManage'));
     }
 
     public function create(): View

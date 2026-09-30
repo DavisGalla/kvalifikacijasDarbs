@@ -7,32 +7,21 @@ use App\Http\Controllers\PersonalBestController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CompetitionOfficialController;
 use App\Http\Controllers\CompetitionWinnerController;
 use App\Http\Controllers\MatchupController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\TeamController;
-use App\Models\TeamMember;
+use App\Http\Controllers\WorkoutDayController;
+use App\Http\Controllers\WorkoutLogController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-
-    $stats = [
-        'personalBests' => $user->personalBests()->count(),
-        'upcomingCompetitions' => $user->registrations()
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->whereHas('competition', fn ($query) => $query->where('start_time', '>', now()))
-            ->count(),
-        'teams' => TeamMember::where('user_id', $user->id)->count(),
-    ];
-
-    return view('dashboard', ['stats' => $stats]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -49,6 +38,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/pbs', [PersonalBestController::class, 'store'])->name('pbs.store');
     Route::patch('/pbs/{pb}', [PersonalBestController::class, 'update'])->name('pbs.update');
     Route::delete('/pbs/{pb}', [PersonalBestController::class, 'destroy'])->name('pbs.destroy');
+
+    Route::post('/workout-logs', [WorkoutLogController::class, 'store'])->name('workout-logs.store');
+    Route::post('/workout-logs/session', [WorkoutLogController::class, 'storeSession'])->name('workout-logs.session');
+    Route::post('/workout-days', [WorkoutDayController::class, 'store'])->name('workout-days.store');
+    Route::put('/workout-days/{day}', [WorkoutDayController::class, 'update'])->name('workout-days.update');
+    Route::delete('/workout-days/{day}', [WorkoutDayController::class, 'destroy'])->name('workout-days.destroy');
+    Route::delete('/workout-logs/{log}', [WorkoutLogController::class, 'destroy'])->name('workout-logs.destroy');
 
     Route::get('/blog', [PostController::class, 'index'])->name('blog.index');
     Route::get('/blog/create', [PostController::class, 'create'])->name('blog.create');

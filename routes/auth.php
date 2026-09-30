@@ -30,6 +30,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
+Route::get('/auth/google/calendar', [AuthController::class, 'redirectToGoogleCalendar'])->name('google.calendar.redirect');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
 Route::middleware('auth')->group(function () {

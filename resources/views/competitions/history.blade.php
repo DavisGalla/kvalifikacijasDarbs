@@ -20,17 +20,17 @@
             </div>
 
             @if ($registrations->isEmpty())
-                <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-xl p-8 text-center">
+                <x-card class="text-center">
                     <p class="text-gray-600 dark:text-gray-400">You have not signed up for any competitions yet.</p>
                     <a href="{{ route('competitions.index') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:bg-slate-800 transition-all duration-150">
                         Browse competitions
                     </a>
-                </div>
+                </x-card>
             @else
                 <div class="space-y-4">
                     @foreach ($registrations as $registration)
                         @php($competition = $registration->competition)
-                        <article class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-xl p-6">
+                        <article class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-2xl p-6">
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     @if ($competition->sport)
@@ -59,8 +59,8 @@
                                     @php($isCompetitionCancelled = $competition->status === 'cancelled')
                                     @php($isCompetitionFinished = $competition->end_time->isPast())
                                     @php($isRegistrationCancelled = $registration->status === 'cancelled')
-                                    <x-status-badge :color="$isCompetitionCancelled || $isCompetitionFinished || $isRegistrationCancelled ? 'gray' : 'green'" class="capitalize">
-                                        {{ $isCompetitionCancelled ? 'Canceled' : ($isRegistrationCancelled ? 'Left' : ($isCompetitionFinished ? 'Finished' : $registration->status)) }}
+                                    <x-status-badge :status="$isCompetitionCancelled ? 'cancelled' : ($isRegistrationCancelled ? 'left' : ($isCompetitionFinished ? 'finished' : $registration->status))">
+                                        {{ $isCompetitionCancelled ? 'Canceled' : ($isRegistrationCancelled ? 'Left' : ($isCompetitionFinished ? 'Finished' : ucfirst($registration->status))) }}
                                     </x-status-badge>
                                     <a href="{{ route('competitions.show', $competition) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                                         View competition

@@ -24,6 +24,6 @@
 </aside>
 
 {{-- Desktop sidebar --}}
-<aside class="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
+<aside class="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:self-start bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
     @include('layouts.sidebar-nav')
 </aside>

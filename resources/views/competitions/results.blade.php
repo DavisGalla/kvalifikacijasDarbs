@@ -5,7 +5,7 @@
 
             <article class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm overflow-hidden">
                 <div class="px-8 pt-8 pb-6 border-b border-gray-100 dark:border-gray-700">
-                    <p class="text-sm font-semibold text-indigo-600">{{ $competition->sport->name }}</p>
+                    <p class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $competition->sport->name }}</p>
                     <h1 class="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                         Results — {{ $competition->title }}
                     </h1>
@@ -53,7 +53,7 @@
 
                     @if ($competition->registration_mode === 'team')
                         @if ($matchups->isEmpty())
-                            <p class="text-sm text-gray-600 dark:text-gray-400">No matchups have been posted yet.</p>
+                            <x-empty-state icon="🏁" class="py-8" message="No matchups have been posted yet." />
                         @else
                             <ul class="divide-y divide-gray-100 dark:divide-gray-700">
                                 @foreach ($matchups as $matchup)
@@ -116,32 +116,9 @@
                         @endif
                     @else
                         @if ($results->isEmpty())
-                            <p class="text-sm text-gray-600 dark:text-gray-400">No results have been posted yet.</p>
+                            <x-empty-state icon="🏁" class="py-8" message="No results have been posted yet." />
                         @else
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                        <th class="pb-3">Position</th>
-                                        <th class="pb-3">Participant</th>
-                                        <th class="pb-3 text-right">{{ $competition->sport->result_type === 'time' ? 'Time' : 'Score' }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                                    @foreach ($results as $result)
-                                        <tr>
-                                            <td class="py-3 font-semibold text-gray-900 dark:text-gray-100">
-                                                {{ $result->position ?? '—' }}
-                                            </td>
-                                            <td class="py-3 text-gray-700 dark:text-gray-300">
-                                                {{ $result->registrant?->name ?? 'Unknown' }}
-                                            </td>
-                                            <td class="py-3 text-right text-gray-700 dark:text-gray-300">
-                                                {{ $result->formattedValue() }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                            <x-leaderboard :results="$results" :competition="$competition" :winner="$competition->winner" />
                         @endif
 
                         @if ($canManage)

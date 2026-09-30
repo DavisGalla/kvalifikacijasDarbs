@@ -91,4 +91,21 @@ class Competition extends Model
         return $this->organizer_id === $user->id
             || $this->officials()->whereKey($user->id)->exists();
     }
+
+    /**
+     * The lifecycle state shown to users, keyed for <x-status-badge>:
+     * the stored status (draft/published/cancelled) refined by the schedule.
+     */
+    public function displayStatus(): string
+    {
+        if ($this->status !== 'published') {
+            return $this->status;
+        }
+
+        if ($this->end_time->isPast()) {
+            return 'finished';
+        }
+
+        return $this->start_time->isPast() ? 'in_progress' : 'upcoming';
+    }
 }

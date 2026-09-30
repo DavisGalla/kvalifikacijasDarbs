@@ -12,23 +12,49 @@
                                 {{ $competition->title }}
                             </h1>
                         </div>
-                        <x-status-badge color="green">Published</x-status-badge>
+                        <x-status-badge :status="$competition->displayStatus()" />
                     </div>
-                    <a href="{{ route('competitions.results.index', $competition) }}"
-                       class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
-                        View results
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
                     @if ($competition->winner)
-                        <p class="mt-4 text-sm font-semibold text-amber-700 dark:text-amber-400">
+                        <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-50 dark:bg-amber-900/20 px-3 py-1 text-sm font-semibold text-amber-700 dark:text-amber-400">
                             🏆 Winner: {{ $competition->winner->name }}
                         </p>
                     @endif
                 </div>
 
-                <div class="px-8 py-8">
+                <div x-data="{ tab: window.location.hash === '#results' ? 'results' : 'details' }">
+                <div class="flex gap-6 px-8 border-b border-gray-100 dark:border-gray-700" role="tablist">
+                    <button type="button" role="tab" @click="tab = 'details'"
+                            :class="tab === 'details' ? 'border-amber-500 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                            class="-mb-px border-b-2 py-3 text-sm font-semibold transition-colors">Details</button>
+                    <button type="button" role="tab" @click="tab = 'results'"
+                            :class="tab === 'results' ? 'border-amber-500 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                            class="-mb-px border-b-2 py-3 text-sm font-semibold transition-colors">Results</button>
+                </div>
+
+                <div x-show="tab === 'results'" x-cloak class="px-8 py-8" id="results">
+                    @if ($results->isNotEmpty())
+                        <x-leaderboard :results="$results" :competition="$competition" :winner="$competition->winner" />
+                    @elseif ($competition->registration_mode === 'team' && $matchups->isNotEmpty())
+                        <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach ($matchups as $matchup)
+                                <li class="py-3 text-sm text-gray-800 dark:text-gray-200">
+                                    {{ $matchup->homeTeam?->name ?? 'Unknown' }}
+                                    <span class="mx-2 font-semibold text-gray-900 dark:text-gray-100 tabular-nums">{{ $matchup->home_score }} – {{ $matchup->away_score }}</span>
+                                    {{ $matchup->awayTeam?->name ?? 'Unknown' }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <x-empty-state icon="🏁" class="py-8" message="No results have been posted yet." />
+                    @endif
+                    <a href="{{ route('competitions.results.index', $competition) }}"
+                       class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+                        {{ $canManage ? 'Manage results' : 'Full results page' }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </a>
+                </div>
+
+                <div x-show="tab === 'details'" class="px-8 py-8">
                     <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
                         {{ $competition->description }}
                     </p>
@@ -100,11 +126,7 @@
                                                 <span class="text-gray-400 dark:text-gray-500">(team)</span>
                                             @endif
                                         </span>
-                                        @if ($participant->status === 'pending')
-                                            <x-status-badge color="amber">Pending</x-status-badge>
-                                        @else
-                                            <x-status-badge color="green">Confirmed</x-status-badge>
-                                        @endif
+                                        <x-status-badge :status="$participant->status" />
                                     </li>
                                 @endforeach
                             </ul>
@@ -151,6 +173,7 @@
                             </form>
                         @endif
                     </div>
+                </div>
                 </div>
             </article>
         </div>

@@ -80,14 +80,18 @@ class Result extends Model
     public function formattedValue(): string
     {
         if ($this->competition?->sport?->result_type !== 'time') {
-            return (string) $this->value;
+            $score = rtrim(rtrim((string) $this->value, '0'), '.');
+
+            return $score.' pts';
         }
 
-        $totalMilliseconds = (int) round(((float) $this->value) * 1000);
-        $minutes = intdiv($totalMilliseconds, 60000);
-        $seconds = intdiv($totalMilliseconds % 60000, 1000);
-        $milliseconds = $totalMilliseconds % 1000;
+        $totalCentiseconds = (int) round(((float) $this->value) * 100);
+        $minutes = intdiv($totalCentiseconds, 6000);
+        $seconds = intdiv($totalCentiseconds % 6000, 100);
+        $centiseconds = $totalCentiseconds % 100;
 
-        return sprintf('%d:%02d.%03d', $minutes, $seconds, $milliseconds);
+        return $minutes > 0
+            ? sprintf('%d:%02d.%02d', $minutes, $seconds, $centiseconds)
+            : sprintf('%d.%02ds', $seconds, $centiseconds);
     }
 }

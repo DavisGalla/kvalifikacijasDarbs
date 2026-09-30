@@ -106,6 +106,16 @@ class GoogleCalendarService
         return $events;
     }
 
+    public function upcomingEvents(int $limit = 5): array
+    {
+        return $this->calendar->events->listEvents('primary', [
+            'maxResults' => $limit,
+            'orderBy' => 'startTime',
+            'singleEvents' => true,
+            'timeMin' => now()->toRfc3339String(),
+        ])->getItems();
+    }
+
     public function getEvent(string $eventId)
     {
         return $this->calendar->events->get('primary', $eventId);
