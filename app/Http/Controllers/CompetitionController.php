@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompetitionRequest;
+use App\Jobs\CreateCompetitionCalendarEvent;
+use App\Jobs\DeleteCompetitionCalendarEvent;
 use App\Models\Competition;
 use App\Models\Registration;
 use App\Models\Sport;
 use App\Models\Team;
-use App\Services\GoogleCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class CompetitionController extends Controller
@@ -223,24 +223,7 @@ class CompetitionController extends Controller
             return back()->with('success', 'Registration submitted successfully. Connect Google Calendar to add it to your calendar.');
         }
 
-        try {
-            $event = (new GoogleCalendarService(Auth::user()))->createEvent(
-                $competition->title,
-                $competition->description . "\n\nLocation: " . $competition->location,
-                $competition->start_time,
-                $competition->end_time,
-            );
-
-            $registration->update(['google_event_id' => $event->getId()]);
-        } catch (\Throwable $exception) {
-            Log::warning('Competition registration calendar event failed.', [
-                'user_id' => Auth::id(),
-                'competition_id' => $competition->id,
-                'exception' => $exception,
-            ]);
-
-            return back()->with('error', 'Registration submitted, but the Google Calendar event could not be created.');
-        }
+        CreateCompetitionCalendarEvent::dispatch($registration->id, Auth::id());
 
         return back()->with('success', 'Registration submitted successfully.');
     }
@@ -279,16 +262,7 @@ class CompetitionController extends Controller
         }
 
         if ($registration->google_event_id && Auth::user()->google_access_token) {
-            try {
-                (new GoogleCalendarService(Auth::user()))->deleteEvent($registration->google_event_id);
-            } catch (\Throwable $exception) {
-                Log::warning('Competition registration calendar event deletion failed.', [
-                    'user_id' => Auth::id(),
-                    'competition_id' => $competition->id,
-                    'event_id' => $registration->google_event_id,
-                    'exception' => $exception,
-                ]);
-            }
+            DeleteCompetitionCalendarEvent::dispatch(Auth::id(), $registration->google_event_id);
         }
 
         $registration->update([
