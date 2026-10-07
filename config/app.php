@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Seeder Email
+    |--------------------------------------------------------------------------
+    |
+    | The email AdminUserSeeder grants Filament admin access to. Set this to
+    | the Google account that should be able to sign in to /admin.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL', 'admin@example.com'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

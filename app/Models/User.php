@@ -9,8 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\PersonalBest;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -30,6 +32,7 @@ class User extends Authenticatable
         'google_access_token',
         'google_refresh_token',
         'google_token_expires_at',
+        'is_admin',
     ];
 
     /**
@@ -53,7 +56,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'google_token_expires_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Who may sign in to the Filament admin panel: admins everywhere, and
+     * (for developer convenience) anyone while running locally.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_admin || app()->environment('local');
     }
 
     public function personalBests(): HasMany
