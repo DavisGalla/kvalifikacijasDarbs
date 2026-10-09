@@ -12,7 +12,7 @@ class PostController extends Controller
 {
     public function index(): View
     {
-        $posts = Post::with('user')->latest()->get();
+        $posts = Post::with('user')->latest()->paginate(15);
 
         return view('blog.index', compact('posts'));
     }
@@ -34,9 +34,9 @@ class PostController extends Controller
 
     public function show(Post $post): View
     {
-        $post->load('comments.user');
+        $comments = $post->comments()->with('user')->oldest()->paginate(20)->fragment('comments');
 
-        return view('blog.show', compact('post'));
+        return view('blog.show', compact('post', 'comments'));
     }
 
     public function destroy(Post $post): RedirectResponse

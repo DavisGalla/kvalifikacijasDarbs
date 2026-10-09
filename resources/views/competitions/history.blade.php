@@ -70,6 +70,8 @@
                         </article>
                     @endforeach
                 </div>
+
+                <div class="mt-8">{{ $registrations->links() }}</div>
             @endif
         </div>
     </div>

@@ -50,11 +50,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/blog', [PostController::class, 'index'])->name('blog.index');
     Route::get('/blog/create', [PostController::class, 'create'])->name('blog.create');
-    Route::post('/blog', [PostController::class, 'store'])->name('blog.store');
+    Route::post('/blog', [PostController::class, 'store'])->middleware('throttle:posts')->name('blog.store');
     Route::get('/blog/{post}', [PostController::class, 'show'])->name('blog.show');
     Route::delete('/blog/{post}', [PostController::class, 'destroy'])->name('blog.destroy');
 
-    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/comments', [CommentController::class, 'store'])->middleware('throttle:comments')->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');

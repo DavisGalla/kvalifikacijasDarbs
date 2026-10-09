@@ -53,17 +53,17 @@
             </div>
 
             {{-- Comments section --}}
-            <div>
+            <div id="comments">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                     Comments
-                    <span class="text-base font-sans font-normal text-gray-400 dark:text-gray-500 ml-2">({{ $post->comments->count() }})</span>
+                    <span class="text-base font-sans font-normal text-gray-400 dark:text-gray-500 ml-2">({{ $comments->total() }})</span>
                 </h2>
 
-                @if($post->comments->isEmpty())
+                @if($comments->isEmpty())
                     <p class="text-gray-400 dark:text-gray-500 text-sm italic">No comments yet. Be the first.</p>
                 @else
                     <div class="space-y-4">
-                        @foreach($post->comments as $comment)
+                        @foreach($comments as $comment)
                             <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-6 py-5">
                                 <div class="flex items-start justify-between gap-4 mb-3">
                                     <div class="flex items-center gap-2.5">
@@ -90,6 +90,8 @@
                             </div>
                         @endforeach
                     </div>
+
+                    <div class="mt-6">{{ $comments->links() }}</div>
                 @endif
 
                 {{-- Add comment --}}

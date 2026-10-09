@@ -34,7 +34,7 @@ class CompetitionController extends Controller
             ->where('status', 'published')
             ->where('end_time', '>=', now())
             ->orderBy('start_time')
-            ->get();
+            ->paginate(12);
 
         return view('competitions.index', compact('competitions'));
     }
@@ -53,7 +53,7 @@ class CompetitionController extends Controller
             })
             ->with(['competition.sport'])
             ->latest('registered_at')
-            ->get();
+            ->paginate(20);
 
         return view('competitions.history', compact('registrations'));
     }

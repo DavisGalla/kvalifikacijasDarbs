@@ -57,6 +57,8 @@
                         </x-card>
                     @endforeach
                 </div>
+
+                <div class="mt-8">{{ $competitions->links() }}</div>
             @endif
         </div>
     </div>

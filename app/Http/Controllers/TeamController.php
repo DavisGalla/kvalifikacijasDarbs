@@ -24,11 +24,12 @@ class TeamController extends Controller
 
         $teams = Team::with(['sport', 'captain'])
             ->withCount('members')
-            ->where('is_public', true)
-            ->orWhere('captain_id', $userId)
-            ->orWhereHas('members', fn ($query) => $query->where('user_id', $userId))
+            ->where(fn ($query) => $query
+                ->where('is_public', true)
+                ->orWhere('captain_id', $userId)
+                ->orWhereHas('members', fn ($query) => $query->where('user_id', $userId)))
             ->latest('created_at')
-            ->get();
+            ->paginate(12);
 
         $invitations = TeamInvitation::with(['team', 'inviter'])
             ->where('invited_user_id', $userId)

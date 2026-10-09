@@ -6,6 +6,7 @@ use App\Http\Requests\StoreWorkoutLogRequest;
 use App\Http\Requests\StoreWorkoutSessionRequest;
 use App\Models\WorkoutLog;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class WorkoutLogController extends Controller
 {
@@ -28,27 +29,33 @@ class WorkoutLogController extends Controller
     {
         $data = $request->validated();
         $date = $data['performed_on'] ?? now()->toDateString();
-        $logged = 0;
 
-        foreach ($data['exercises'] as $exercise) {
-            $weights = collect($exercise['set_weights'] ?? [])
-                ->filter(fn ($weight) => $weight !== null && $weight !== '')
-                ->map(fn ($weight) => (float) $weight)
-                ->values()
-                ->all();
+        // One session is one unit: if any exercise fails to save, none of them are kept.
+        $logged = DB::transaction(function () use ($data, $date): int {
+            $logged = 0;
 
-            if ($weights === []) {
-                continue;
+            foreach ($data['exercises'] as $exercise) {
+                $weights = collect($exercise['set_weights'] ?? [])
+                    ->filter(fn ($weight) => $weight !== null && $weight !== '')
+                    ->map(fn ($weight) => (float) $weight)
+                    ->values()
+                    ->all();
+
+                if ($weights === []) {
+                    continue;
+                }
+
+                auth()->user()->workoutLogs()->create([
+                    'exercise' => $exercise['name'],
+                    'day_name' => $data['day_name'] ?? null,
+                    'set_weights' => $weights,
+                    'performed_on' => $date,
+                ]);
+                $logged++;
             }
 
-            auth()->user()->workoutLogs()->create([
-                'exercise' => $exercise['name'],
-                'day_name' => $data['day_name'] ?? null,
-                'set_weights' => $weights,
-                'performed_on' => $date,
-            ]);
-            $logged++;
-        }
+            return $logged;
+        });
 
         if ($logged === 0) {
             return redirect(route('pbs.index').'#workout')

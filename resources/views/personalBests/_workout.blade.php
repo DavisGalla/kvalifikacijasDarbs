@@ -159,6 +159,8 @@
             </section>
         @endforeach
     </div>
+
+    <div class="mt-6">{{ $logDays->links() }}</div>
 @endif
 
 {{-- My training program --}}
