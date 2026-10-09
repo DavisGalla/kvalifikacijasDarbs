@@ -8,11 +8,18 @@ it('reports that an admin user can access the filament panel', function () {
     expect($admin->canAccessPanel(filament()->getCurrentOrDefaultPanel()))->toBeTrue();
 });
 
-it('reports that a regular user cannot access the filament panel outside local', function () {
+it('reports that a regular user cannot access the filament panel', function () {
     $user = User::factory()->create(['is_admin' => false]);
 
-    expect(app()->environment('local'))->toBeFalse();
     expect($user->canAccessPanel(filament()->getCurrentOrDefaultPanel()))->toBeFalse();
+});
+
+it('denies the admin panel to a regular user even when APP_ENV is local', function () {
+    app()->detectEnvironment(fn () => 'local');
+    $user = User::factory()->create(['is_admin' => false]);
+
+    expect($user->canAccessPanel(filament()->getCurrentOrDefaultPanel()))->toBeFalse();
+    $this->actingAs($user)->get('/admin')->assertForbidden();
 });
 
 it('denies the admin panel to a regular authenticated user', function () {

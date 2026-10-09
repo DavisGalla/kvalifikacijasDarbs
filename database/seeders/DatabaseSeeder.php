@@ -12,27 +12,20 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     *
+     * Demo accounts and competitions (with well-known emails and passwords) are only seeded in
+     * local and testing environments, never as part of initializing a production database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(AdminUserSeeder::class);
 
-        $testUser = User::where('email', 'test@example.com')->first();
+        if (! app()->environment('local', 'testing')) {
+            $this->command?->info('Skipping demo data outside the local environment.');
 
-        if ($testUser) {
-            $testUser->update([
-                'name' => 'Test User',
-                'username' => 'testuser',
-            ]);
-        } else {
-            User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'username' => 'testuser',
-            ]);
+            return;
         }
 
-        $this->call(AdminUserSeeder::class);
-        $this->call(CompetitionSeeder::class);
+        $this->call(DemoDataSeeder::class);
     }
 }

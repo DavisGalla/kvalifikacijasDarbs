@@ -59,12 +59,13 @@ return [
     | Admin Seeder Email
     |--------------------------------------------------------------------------
     |
-    | The email AdminUserSeeder grants Filament admin access to. Set this to
-    | the Google account that should be able to sign in to /admin.
+    | The email AdminUserSeeder creates the first Filament admin account for,
+    | on a database that has no admin yet. It never promotes an existing
+    | account; use `php artisan user:set-admin {email}` for that.
     |
     */
 
-    'admin_email' => env('ADMIN_EMAIL', 'admin@example.com'),
+    'admin_email' => env('ADMIN_EMAIL'),
 
     /*
     |--------------------------------------------------------------------------

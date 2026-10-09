@@ -8,27 +8,42 @@ use Illuminate\Database\Seeder;
 class AdminUserSeeder extends Seeder
 {
     /**
-     * Seed a user with access to the Filament admin panel.
+     * Create the first Filament admin account for ADMIN_EMAIL.
      *
-     * The email is read from ADMIN_EMAIL so each environment can seed its
-     * own admin without editing this file; in production, sign in with that
-     * Google account to pick up the admin flag.
+     * Safe to run against a database that is already in use: it only creates a new account, and
+     * only while no admin exists. It never grants admin rights to an existing account, so a
+     * mistyped or reused ADMIN_EMAIL cannot silently promote a regular user. Existing accounts
+     * are promoted explicitly with `php artisan user:set-admin {email}`.
      */
     public function run(): void
     {
-        $email = config('app.admin_email', 'admin@example.com');
+        $email = config('app.admin_email');
 
-        $admin = User::where('email', $email)->first();
+        if (blank($email)) {
+            $this->command?->warn('ADMIN_EMAIL is not set; no admin account was created.');
 
-        if ($admin) {
-            $admin->update(['is_admin' => true]);
-        } else {
-            User::factory()->create([
-                'name' => 'Admin',
-                'email' => $email,
-                'username' => 'admin',
-                'is_admin' => true,
-            ]);
+            return;
         }
+
+        if (User::withTrashed()->where('is_admin', true)->exists()) {
+            $this->command?->info('An admin account already exists; skipping.');
+
+            return;
+        }
+
+        if (User::withTrashed()->where('email', $email)->exists()) {
+            $this->command?->warn("An account for {$email} already exists and was not promoted. Run `php artisan user:set-admin {$email}` to grant it admin access.");
+
+            return;
+        }
+
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => $email,
+            'username' => 'admin',
+            'is_admin' => true,
+        ]);
+
+        $this->command?->info("Created admin account {$email}. Sign in with that Google account to use /admin.");
     }
 }

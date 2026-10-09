@@ -74,7 +74,9 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_admin || app()->environment('local');
+        // Deliberately independent of APP_ENV: a server left on APP_ENV=local must not open the
+        // panel to every signed-in user. Grant access with `php artisan user:set-admin`.
+        return $this->is_admin;
     }
 
     public function personalBests(): HasMany
