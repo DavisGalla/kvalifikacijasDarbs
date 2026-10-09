@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\RosterChangeException;
 use App\Http\Requests\StoreTeamRequest;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\TeamInvitation;
 use App\Models\Sport;
 use App\Models\User;
+use App\Services\TeamRoster;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TeamController extends Controller
@@ -77,60 +80,43 @@ class TeamController extends Controller
         return view('teams.show', compact('team', 'isMember'));
     }
 
-    public function join(Team $team): RedirectResponse
+    public function join(Team $team, TeamRoster $roster): RedirectResponse
     {
         abort_unless($team->is_public, 404);
 
-        if ($team->members()->where('user_id', Auth::id())->exists()) {
-            return back()->with('error', 'You are already a member of this team.');
+        try {
+            $roster->addMember($team, Auth::user());
+        } catch (RosterChangeException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $team->members()->create([
-            'user_id' => Auth::id(),
-            'role' => 'member',
-            'joined_at' => now(),
-        ]);
 
         return back()->with('success', 'You joined the team.');
     }
 
-    public function leave(Team $team): RedirectResponse
+    public function leave(Team $team, TeamRoster $roster): RedirectResponse
     {
-        $member = $team->members()
-            ->where('user_id', Auth::id())
-            ->where('role', 'member')
-            ->first();
-
-        if (! $member) {
-            return back()->with('error', 'You cannot leave this team.');
+        try {
+            $roster->removeMember($team, Auth::user());
+        } catch (RosterChangeException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $remaining = $team->members()->count() - 1;
-
-        $blocking = $team->registrations()
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->whereHas('competition', fn ($query) => $query
-                ->where('start_time', '>', now())
-                ->whereNotNull('min_team_members')
-                ->where('min_team_members', '>', $remaining))
-            ->exists();
-
-        if ($blocking) {
-            return back()->with('error', 'Leaving would drop the team below the minimum size of a competition it is registered for.');
-        }
-
-        $member->delete();
 
         return redirect()->route('teams.index')->with('success', 'You left the team.');
     }
 
-    public function destroy(Team $team): RedirectResponse
+    public function destroy(Team $team, TeamRoster $roster): RedirectResponse
     {
         abort_unless($team->captain_id === Auth::id(), 403);
 
-        $team->delete();
+        try {
+            $archived = $roster->deleteTeam($team);
+        } catch (RosterChangeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
-        return redirect()->route('teams.index')->with('success', 'Team deleted successfully.');
+        return redirect()->route('teams.index')->with('success', $archived
+            ? 'Team archived. Its competition history has been kept.'
+            : 'Team deleted successfully.');
     }
 
     public function invite(Team $team): RedirectResponse
@@ -138,7 +124,8 @@ class TeamController extends Controller
         abort_unless($team->captain_id === Auth::id(), 403);
 
         request()->validate([
-            'username' => ['required', 'string', 'exists:users,username'],
+            // Anonymized (soft-deleted) accounts cannot be invited.
+            'username' => ['required', 'string', Rule::exists('users', 'username')->whereNull('anonymized_at')],
         ]);
 
         $user = User::where('username', request('username'))->firstOrFail();
@@ -179,7 +166,7 @@ class TeamController extends Controller
         return back()->with('success', 'Invitation sent.');
     }
 
-    public function acceptInvitation(TeamInvitation $invitation): RedirectResponse
+    public function acceptInvitation(TeamInvitation $invitation, TeamRoster $roster): RedirectResponse
     {
         abort_unless($invitation->invited_user_id === Auth::id(), 403);
 
@@ -187,13 +174,26 @@ class TeamController extends Controller
             return back()->with('error', 'This invitation is no longer pending.');
         }
 
-        DB::transaction(function () use ($invitation): void {
-            $invitation->update(['status' => 'accepted', 'responded_at' => now()]);
-            $invitation->team->members()->firstOrCreate(
-                ['user_id' => Auth::id()],
-                ['role' => 'member', 'joined_at' => now()]
-            );
-        });
+        if (! $invitation->team) {
+            return back()->with('error', 'This team no longer exists.');
+        }
+
+        try {
+            $roster->locked($invitation->team, function (Team $team) use ($invitation, $roster): void {
+                // Claim the invitation first; a second tab or a concurrent decline loses here.
+                if (! $invitation->respond('accepted')) {
+                    throw new RosterChangeException('This invitation is no longer pending.');
+                }
+
+                // A refused join rolls the claim back, leaving the invitation pending so it can
+                // be accepted once a spot frees up.
+                if (! $team->members()->where('user_id', Auth::id())->exists()) {
+                    $roster->addMember($team, Auth::user());
+                }
+            });
+        } catch (RosterChangeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'You joined the team.');
     }
@@ -206,7 +206,9 @@ class TeamController extends Controller
             return back()->with('error', 'This invitation is no longer pending.');
         }
 
-        $invitation->update(['status' => 'declined', 'responded_at' => now()]);
+        if (! $invitation->respond('declined')) {
+            return back()->with('error', 'This invitation is no longer pending.');
+        }
 
         return back()->with('success', 'Invitation declined.');
     }

@@ -48,7 +48,7 @@ class Competition extends Model
 
     public function organizer()
     {
-        return $this->belongsTo(User::class, 'organizer_id');
+        return $this->belongsTo(User::class, 'organizer_id')->withTrashed();
     }
 
     public function registrations()
@@ -68,7 +68,7 @@ class Competition extends Model
 
     public function winner(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo()->withTrashed();
     }
 
     public function sport()

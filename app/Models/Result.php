@@ -47,7 +47,8 @@ class Result extends Model
 
     public function registrant(): MorphTo
     {
-        return $this->morphTo();
+        // Archived teams stay resolvable so historical records keep their participant.
+        return $this->morphTo()->withTrashed();
     }
 
     /**

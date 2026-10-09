@@ -3,7 +3,9 @@
 use App\Models\Sport;
 use App\Models\Team;
 use App\Models\TeamInvitation;
+use App\Models\TeamMember;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 // --- Creating a team ---
 
@@ -132,6 +134,34 @@ it('prevents a user from joining a team twice', function () {
 
     $response->assertSessionHas('error');
     expect($team->members()->where('user_id', $joiner->id)->count())->toBe(1);
+});
+
+it('reports a duplicate join caught only by the unique index as an ordinary error', function () {
+    $captain = User::factory()->create();
+    $joiner = User::factory()->create();
+    $sport = Sport::create(['name' => 'Basketball', 'slug' => 'basketball']);
+    $team = Team::create([
+        'name' => 'Riga Lions',
+        'sport_id' => $sport->id,
+        'captain_id' => $captain->id,
+        'is_public' => true,
+    ]);
+
+    // Simulate a write that bypassed the roster lock: the same membership appears between
+    // the existence check and the insert.
+    TeamMember::creating(function (TeamMember $member) {
+        DB::table('team_members')->insert([
+            'team_id' => $member->team_id,
+            'user_id' => $member->user_id,
+            'role' => 'member',
+            'joined_at' => now(),
+        ]);
+    });
+
+    $response = $this->actingAs($joiner)->post(route('teams.join', $team));
+
+    $response->assertRedirect();
+    $response->assertSessionHas('error', 'You are already a member of this team.');
 });
 
 // --- Leaving a team ---

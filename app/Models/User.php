@@ -6,16 +6,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\PersonalBest;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
+/**
+ * Users with competition history are anonymized instead of deleted (soft deletes on
+ * anonymized_at), so registrations, results and organized competitions keep their records.
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
+
+    public const DELETED_AT = 'anonymized_at';
 
     /**
      * The attributes that are mass assignable.
@@ -57,6 +64,7 @@ class User extends Authenticatable implements FilamentUser
             'google_token_expires_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'anonymized_at' => 'datetime',
         ];
     }
 
@@ -103,5 +111,49 @@ class User extends Authenticatable implements FilamentUser
     public function teamInvitations()
     {
         return $this->hasMany(TeamInvitation::class, 'invited_user_id');
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function teamMemberships(): HasMany
+    {
+        return $this->hasMany(TeamMember::class);
+    }
+
+    public function organizedCompetitions(): HasMany
+    {
+        return $this->hasMany(Competition::class, 'organizer_id');
+    }
+
+    public function captainedTeams(): HasMany
+    {
+        return $this->hasMany(Team::class, 'captain_id');
+    }
+
+    public function wonCompetitions(): MorphMany
+    {
+        return $this->morphMany(Competition::class, 'winner');
+    }
+
+    /**
+     * Whether competition records refer to this user, so deleting the row would lose history
+     * (or cascade-delete organized competitions and captained teams).
+     */
+    public function hasCompetitionHistory(): bool
+    {
+        return $this->registrations()->exists()
+            || $this->results()->exists()
+            || $this->wonCompetitions()->exists()
+            || $this->organizedCompetitions()->exists()
+            || $this->captainedTeams()->withTrashed()->exists()
+            || $this->teamMemberships()->whereHas('team', fn ($query) => $query->onlyTrashed())->exists();
     }
 }

@@ -15,11 +15,14 @@ class TeamMemberForm
                 Select::make('team_id')
                     ->relationship('team', 'name')
                     ->required()
+                    // Moving a membership would bypass the roster rules; remove and re-add instead.
+                    ->disabledOn('edit')
                     ->searchable()
                     ->preload(),
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required()
+                    ->disabledOn('edit')
                     ->searchable()
                     ->preload(),
                 Select::make('role')

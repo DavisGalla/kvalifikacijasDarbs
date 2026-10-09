@@ -24,6 +24,25 @@ class TeamInvitation extends Model
         ];
     }
 
+    /**
+     * Move a pending invitation to the given status, atomically. Returns false when another
+     * request already responded to it, so only one response can ever win.
+     */
+    public function respond(string $status): bool
+    {
+        $respondedAt = now();
+
+        $updated = static::whereKey($this->getKey())
+            ->where('status', 'pending')
+            ->update(['status' => $status, 'responded_at' => $respondedAt]);
+
+        if ($updated === 1) {
+            $this->forceFill(['status' => $status, 'responded_at' => $respondedAt])->syncOriginal();
+        }
+
+        return $updated === 1;
+    }
+
     public function team()
     {
         return $this->belongsTo(Team::class);

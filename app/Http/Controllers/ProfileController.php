@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AccountDeletionException;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AccountDeletion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +43,7 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, AccountDeletion $accountDeletion): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'email_confirmation' => ['required', 'string', Rule::in([$request->user()->email])],
@@ -49,11 +51,13 @@ class ProfileController extends Controller
             'email_confirmation.in' => 'The email you entered does not match your account email.',
         ]);
 
-        $user = $request->user();
+        try {
+            $accountDeletion->delete($request->user());
+        } catch (AccountDeletionException $e) {
+            return Redirect::route('profile.edit')->withErrors(['account' => $e->getMessage()], 'userDeletion');
+        }
 
         Auth::logout();
-
-        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

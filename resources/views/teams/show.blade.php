@@ -42,7 +42,7 @@
 
                     @if ($team->captain_id === auth()->id())
                         <div class="mb-8 flex justify-end">
-                            <form method="POST" action="{{ route('teams.destroy', $team) }}" onsubmit="return confirm('Delete this team? This cannot be undone.');">
+                            <form method="POST" action="{{ route('teams.destroy', $team) }}" onsubmit="return confirm('Delete this team? A team that has taken part in competitions is archived instead, so its results are kept.');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">Delete team</button>
