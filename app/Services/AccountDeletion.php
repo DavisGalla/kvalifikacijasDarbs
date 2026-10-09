@@ -21,8 +21,10 @@ use Illuminate\Support\Str;
  */
 class AccountDeletion
 {
-    public function __construct(private TeamRoster $roster)
-    {
+    public function __construct(
+        private TeamRoster $roster,
+        private GoogleCalendarConnection $calendarConnection,
+    ) {
     }
 
     /**
@@ -32,7 +34,9 @@ class AccountDeletion
      */
     public function delete(User $user): bool
     {
-        return DB::transaction(function () use ($user): bool {
+        $googleToken = $user->google_refresh_token ?? $user->google_access_token;
+
+        $anonymized = DB::transaction(function () use ($user): bool {
             $user = RowLock::lock($user) ?? throw new AccountDeletionException('This account no longer exists.');
 
             $this->assertNoUpcomingCommitments($user);
@@ -71,6 +75,12 @@ class AccountDeletion
 
             return true;
         }, 3);
+
+        // Only once the account is really gone: also withdraw the app's access at Google, not just
+        // forget the token locally.
+        $this->calendarConnection->revoke($googleToken);
+
+        return $anonymized;
     }
 
     private function assertNoUpcomingCommitments(User $user): void

@@ -300,14 +300,18 @@ class CompetitionController extends Controller
             return back()->with('error', 'You cannot leave a competition after it has started.');
         }
 
-        if ($registration->google_event_id && Auth::user()->google_access_token) {
-            DeleteCompetitionCalendarEvent::dispatch(Auth::id(), $registration->google_event_id);
-        }
+        // The event id is known even when the create job has not saved it yet, so an event created
+        // around the time of cancelling is removed too (the create job also re-checks the status).
+        $eventId = $registration->google_event_id ?? GoogleCalendarService::registrationEventId($registration);
 
         $registration->update([
             'status' => 'cancelled',
             'google_event_id' => null,
         ]);
+
+        if (Auth::user()->google_access_token) {
+            DeleteCompetitionCalendarEvent::dispatch(Auth::id(), $eventId, $registration->id);
+        }
 
         return back()->with('success', 'You have left the competition.');
     }

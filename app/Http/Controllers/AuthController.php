@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\GoogleCalendarConnection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
@@ -11,6 +13,8 @@ use Laravel\Socialite\Two\InvalidStateException;
 
 class AuthController extends Controller
 {
+    private const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar';
+
     public function redirectToGoogle()
     {
         // Basic sign-in only (openid/profile/email). These are non-sensitive scopes,
@@ -26,7 +30,7 @@ class AuthController extends Controller
         session(['google_calendar_connect' => true]);
 
         return Socialite::driver('google')
-            ->scopes(['https://www.googleapis.com/auth/calendar'])
+            ->scopes([self::CALENDAR_SCOPE])
             // Without these, Google never issues a refresh token, so once the
             // short-lived access token expires the calendar integration breaks
             // permanently with no way to recover except manually reconnecting.
@@ -34,8 +38,17 @@ class AuthController extends Controller
             ->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request, GoogleCalendarConnection $calendarConnection)
     {
+        // The user cancelled on Google's consent screen or refused the requested access.
+        if ($request->filled('error')) {
+            $connectingCalendar = session()->pull('google_calendar_connect', false);
+
+            return Auth::check() && $connectingCalendar
+                ? redirect()->route('calendar.connect')->with('error', 'Google Calendar was not connected. Everything else keeps working without it.')
+                : redirect('/')->with('error', 'Google sign-in was cancelled.');
+        }
+
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (InvalidStateException $exception) {
@@ -65,7 +78,10 @@ class AuthController extends Controller
         // calendar scope and would overwrite a working calendar token.
         $connectingCalendar = session()->pull('google_calendar_connect', false);
 
-        if ($connectingCalendar) {
+        // With granular consent the user can sign in but untick calendar access.
+        $calendarGranted = in_array(self::CALENDAR_SCOPE, $googleUser->approvedScopes ?? [], true);
+
+        if ($connectingCalendar && $calendarGranted) {
             $user->fill([
                 'google_access_token'     => $googleUser->token,
                 // Google only returns a refresh token on first consent; keep the stored one otherwise.
@@ -78,6 +94,17 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route($connectingCalendar ? 'calendar.index' : 'dashboard');
+        if ($connectingCalendar && ! $calendarGranted) {
+            return redirect()->route('calendar.connect')
+                ->with('error', 'Calendar access was not granted, so Google Calendar is not connected.');
+        }
+
+        if ($connectingCalendar) {
+            $calendarConnection->syncUpcomingRegistrations($user);
+
+            return redirect()->route('calendar.index')->with('success', 'Google Calendar connected.');
+        }
+
+        return redirect()->route('dashboard');
     }
 }

@@ -92,7 +92,7 @@
                     </div>
                     <p class="mt-4 font-semibold text-amber-800 dark:text-amber-400">Connect Google Calendar</p>
                     <p class="mt-1 text-sm text-amber-700/80 dark:text-amber-400/70">One-time setup to start planning sessions.</p>
-                    <a href="{{ route('google.calendar.redirect') }}" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-amber-700 dark:text-amber-400 hover:gap-2 transition-all">
+                    <a href="{{ route('calendar.connect') }}" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-amber-700 dark:text-amber-400 hover:gap-2 transition-all">
                         Connect now
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -142,10 +142,10 @@
 
                 @if (! $calendarConnected)
                     <x-empty-state icon="📅" class="py-8" message="Connect Google Calendar to see your upcoming sessions and events here."
-                        cta="Connect Google Calendar" :href="route('google.calendar.redirect')" />
+                        cta="Connect Google Calendar" :href="route('calendar.connect')" />
                 @elseif ($calendarError)
                     <x-empty-state icon="⚠️" class="py-8" message="We couldn't load your calendar right now. Try again in a moment, or reconnect if it keeps happening."
-                        cta="Reconnect" :href="route('google.calendar.redirect')" />
+                        cta="Reconnect" :href="route('calendar.connect')" />
                 @elseif (count($calendarEvents) === 0)
                     <x-empty-state icon="📅" class="py-8" message="Nothing scheduled. Plan your next training session."
                         cta="Add an event" :href="route('calendar.create')" />

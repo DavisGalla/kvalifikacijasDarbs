@@ -50,6 +50,8 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = [
         'password',
         'remember_token',
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -61,6 +63,10 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            // OAuth tokens grant access to the user's Google Calendar, so they are encrypted with
+            // APP_KEY before they reach the database.
+            'google_access_token' => 'encrypted',
+            'google_refresh_token' => 'encrypted',
             'google_token_expires_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',

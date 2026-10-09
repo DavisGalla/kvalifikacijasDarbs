@@ -34,6 +34,13 @@ class Registration extends Model
         ]);
     }
 
+    public const ACTIVE_STATUSES = ['pending', 'confirmed'];
+
+    public function isActive(): bool
+    {
+        return in_array($this->status, self::ACTIVE_STATUSES, true);
+    }
+
     public function competition()
     {
         return $this->belongsTo(Competition::class);

@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/connect', [CalendarController::class, 'connect'])->name('calendar.connect');
+    Route::delete('/calendar/connection', [CalendarController::class, 'disconnect'])->name('calendar.disconnect');
     Route::get('/calendar/create', [CalendarController::class, 'create'])->name('calendar.create');
     Route::get('/calendar/{eventId}', [CalendarController::class, 'show'])->name('calendar.show');
     Route::post('/calendar', [CalendarController::class, 'store'])->name('calendar.store');
