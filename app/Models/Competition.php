@@ -32,6 +32,14 @@ class Competition extends Model
             'user' => User::class,
             'team' => Team::class,
         ]);
+
+        // Another sport may rank in the opposite direction (time vs score).
+        static::saved(function (Competition $competition) {
+            if ($competition->wasChanged('sport_id')) {
+                $competition->unsetRelation('sport');
+                Result::recalculatePositions($competition->id);
+            }
+        });
     }
 
     protected function casts(): array

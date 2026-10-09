@@ -89,7 +89,7 @@ class CompetitionController extends Controller
 
         $results = $competition->results()
             ->with('registrant')
-            ->orderByRaw('position IS NULL, position')
+            ->ranked($competition)
             ->get()
             ->each->setRelation('competition', $competition);
 

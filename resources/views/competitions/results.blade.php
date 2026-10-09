@@ -124,8 +124,10 @@
                         @if ($canManage)
                             <div class="mt-10 border-t border-gray-100 dark:border-gray-700 pt-8">
                                 <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Enter results</h2>
+                                @php($resultFormat = $competition->sport->resultFormat())
                                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     Only confirmed participants can be scored. Positions are calculated automatically.
+                                    {{ $resultFormat->description() }}
                                 </p>
 
                                 @if ($registrations->isEmpty())
@@ -134,21 +136,30 @@
                                     <div class="mt-4 space-y-3">
                                         @foreach ($registrations as $registration)
                                             @php($existing = $results->get("{$registration->registrant_type}:{$registration->registrant_id}"))
+                                            {{-- Old input and errors belong only to the row that was submitted. --}}
+                                            @php($isSubmittedRow = old('registrant_type') === $registration->registrant_type && (int) old('registrant_id') === (int) $registration->registrant_id)
                                             <form method="POST" action="{{ route('competitions.results.store', $competition) }}"
-                                                  class="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3">
+                                                  class="rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3">
                                                 @csrf
                                                 <input type="hidden" name="registrant_type" value="{{ $registration->registrant_type }}">
                                                 <input type="hidden" name="registrant_id" value="{{ $registration->registrant_id }}">
-                                                <span class="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ $registration->registrant?->name ?? 'Unknown' }}
-                                                </span>
-                                                <input type="number" step="0.001" name="value" required
-                                                       value="{{ old('value', $existing?->value) }}"
-                                                       placeholder="{{ $competition->sport->result_type === 'time' ? 'Seconds' : 'Score' }}"
-                                                       class="w-32 rounded-xl border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
-                                                <button type="submit" class="rounded-xl bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">
-                                                    Save
-                                                </button>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {{ $registration->registrant?->name ?? 'Unknown' }}
+                                                    </span>
+                                                    <input type="text" name="value" required
+                                                           inputmode="{{ $resultFormat->isTime() || $resultFormat->decimals > 0 ? 'decimal' : 'numeric' }}"
+                                                           value="{{ $isSubmittedRow ? old('value') : $resultFormat->inputValue($existing?->value) }}"
+                                                           placeholder="{{ $resultFormat->placeholder() }}"
+                                                           aria-label="{{ $resultFormat->isTime() ? 'Time' : 'Score' }} for {{ $registration->registrant?->name ?? 'participant' }}"
+                                                           class="w-32 rounded-xl border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                                    <button type="submit" class="rounded-xl bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">
+                                                        Save
+                                                    </button>
+                                                </div>
+                                                @if ($isSubmittedRow)
+                                                    <x-input-error :messages="$errors->get('value')" class="mt-2" />
+                                                @endif
                                             </form>
                                         @endforeach
                                     </div>

@@ -2,10 +2,15 @@
 
 namespace App\Filament\Resources\Results\Schemas;
 
+use App\Exceptions\CompetitionRuleException;
 use App\Models\Competition;
+use App\Rules\ValidResult;
+use App\Services\CompetitionResults;
+use App\Support\ResultFormat;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class ResultForm
@@ -29,26 +34,38 @@ class ResultForm
                 TextInput::make('registrant_id')
                     ->label('Registrant ID')
                     ->numeric()
-                    ->required(),
+                    ->required()
+                    ->rules([
+                        // Same rule as the organizer's results page: only confirmed participants get results.
+                        fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                            $isConfirmed = Competition::find($get('competition_id'))?->registrations()
+                                ->where('registrant_type', $get('registrant_type'))
+                                ->where('registrant_id', $value)
+                                ->where('status', 'confirmed')
+                                ->exists();
+
+                            if (! $isConfirmed) {
+                                $fail('That participant is not confirmed for this competition.');
+                            }
+                        },
+                    ]),
                 TextInput::make('value')
-                    ->label(fn (Get $get) => static::resultType($get('competition_id')) === 'time'
-                        ? 'Time (seconds)'
-                        : 'Score')
-                    ->helperText(fn (Get $get) => static::resultType($get('competition_id')) === 'time'
-                        ? 'Enter the finishing time in seconds, e.g. 63.482 for 1:03.482.'
-                        : 'Enter the final score. Highest score wins.')
-                    ->numeric()
-                    ->step(0.001)
-                    ->required(),
+                    ->label(fn (Get $get) => static::format($get('competition_id'))?->isTime() ? 'Time' : 'Result')
+                    ->helperText(fn (Get $get) => static::format($get('competition_id'))?->description() ?? 'Choose a competition first.')
+                    ->placeholder(fn (Get $get) => static::format($get('competition_id'))?->placeholder())
+                    ->required()
+                    ->rules(fn (Get $get) => ($format = static::format($get('competition_id'))) ? [new ValidResult($format)] : [])
+                    ->formatStateUsing(fn ($state, Get $get) => static::format($get('competition_id'))?->inputValue($state) ?? $state)
+                    ->dehydrateStateUsing(fn ($state, Get $get) => static::format($get('competition_id'))?->parse($state) ?? $state),
             ]);
     }
 
-    protected static function resultType(?int $competitionId): ?string
+    protected static function format(?int $competitionId): ?ResultFormat
     {
         if (! $competitionId) {
             return null;
         }
 
-        return Competition::find($competitionId)?->sport?->result_type;
+        return Competition::with('sport')->find($competitionId)?->sport?->resultFormat();
     }
 }

@@ -28,6 +28,23 @@ class SportForm
                     ->default('score')
                     ->required()
                     ->helperText('Determines how results are ranked and displayed for this sport.'),
+                Select::make('result_decimals')
+                    ->label('Result precision')
+                    ->options([
+                        0 => 'Whole numbers',
+                        1 => '1 decimal',
+                        2 => '2 decimals (e.g. hundredths of a second)',
+                        3 => '3 decimals (e.g. thousandths of a second)',
+                    ])
+                    ->placeholder('Default: 2 decimals for time, whole numbers for score')
+                    ->helperText('How precisely results may be entered. Results with more decimals are rejected.'),
+                TextInput::make('result_max')
+                    ->label('Maximum result')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(9999999.999)
+                    ->step(0.001)
+                    ->helperText('Optional upper bound, in seconds for time or points for score (e.g. 10 for gymnastics).'),
             ]);
     }
 }

@@ -273,3 +273,48 @@ it('lets only one response win when an invitation is accepted and declined at th
     expect($status)->toBe($accepting['success'] ? 'accepted' : 'declined');
     expect($isMember)->toBe((bool) $accepting['success']);
 });
+
+it('ranks two results entered at the same time correctly', function () {
+    $organizer = User::factory()->connection('race')->create();
+    $slower = User::factory()->connection('race')->create();
+    $faster = User::factory()->connection('race')->create();
+
+    $competition = Competition::on('race')->create([
+        'organizer_id' => $organizer->id,
+        'sport_id' => Sport::on('race')->create(['name' => 'Sprint', 'slug' => 'sprint', 'result_type' => 'time'])->id,
+        'title' => 'City Sprint',
+        'description' => 'Concurrency test competition.',
+        'location' => 'Track',
+        'start_time' => now()->subHours(3),
+        'end_time' => now()->subHour(),
+        'registration_deadline' => now()->subDay(),
+        'registration_mode' => 'individual',
+        'status' => 'published',
+    ]);
+
+    foreach ([$slower, $faster] as $participant) {
+        DB::connection('race')->table('registrations')->insert([
+            'competition_id' => $competition->id,
+            'registrant_type' => 'user',
+            'registrant_id' => $participant->id,
+            'status' => 'confirmed',
+            'registered_at' => now(),
+        ]);
+    }
+
+    $path = "/competitions/{$competition->id}/results";
+
+    // The first request pauses right after reading the results to rank them; the second starts a
+    // moment later and runs straight through. Without a lock the first then writes a ranking based
+    // on a list that no longer includes the faster result.
+    $results = sendConcurrently($this->raceDatabase, [
+        [$organizer, 'POST', $path, ['registrant_type' => 'user', 'registrant_id' => $slower->id, 'value' => '20.00'], ['pauseAfter' => 'order by "value"']],
+        [$organizer, 'POST', $path, ['registrant_type' => 'user', 'registrant_id' => $faster->id, 'value' => '10.00'], ['pauseAfter' => '', 'delay' => 0.1]],
+    ]);
+
+    expect(array_filter(array_column($results, 'success')))->toHaveCount(2);
+
+    $positions = DB::connection('race')->table('results')->pluck('position', 'registrant_id');
+    expect($positions[$faster->id])->toBe(1);
+    expect($positions[$slower->id])->toBe(2);
+});

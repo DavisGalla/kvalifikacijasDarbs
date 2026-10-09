@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Competition;
 use App\Models\Result;
+use App\Rules\ValidResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ class ResultController extends Controller
 
         $results = $competition->results()
             ->with('registrant')
-            ->orderByRaw('position IS NULL, position')
+            ->ranked($competition)
             ->get()
             ->keyBy(fn (Result $result) => "{$result->registrant_type}:{$result->registrant_id}");
 
@@ -53,10 +54,12 @@ class ResultController extends Controller
     {
         abort_unless($competition->isManagedBy(Auth::user()), 403);
 
+        $format = $competition->sport->resultFormat();
+
         $validated = $request->validate([
             'registrant_type' => ['required', 'in:user,team'],
             'registrant_id' => ['required', 'integer'],
-            'value' => ['required', 'numeric'],
+            'value' => ['required', new ValidResult($format)],
         ]);
 
         $isConfirmed = $competition->registrations()
@@ -75,7 +78,7 @@ class ResultController extends Controller
                 'registrant_type' => $validated['registrant_type'],
                 'registrant_id' => $validated['registrant_id'],
             ],
-            ['value' => $validated['value']],
+            ['value' => $format->parse($validated['value'])],
         );
 
         return back()->with('success', 'Result saved.');
