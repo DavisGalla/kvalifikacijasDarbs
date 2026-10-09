@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CompetitionResults;
 use App\Support\ResultFormat;
 use App\Support\RowLock;
 use Illuminate\Database\Eloquent\Builder;
@@ -142,6 +143,8 @@ class Result extends Model
 
                 $previousValue = $result->value;
             }
+
+            app(CompetitionResults::class)->syncAutomaticWinner($competitionId);
         }, 3);
     }
 

@@ -29,8 +29,12 @@ class CompetitionForm
                 Textarea::make('description')->required()->columnSpanFull(),
                 TextInput::make('location')->required()->maxLength(255),
                 DateTimePicker::make('start_time')->required(),
-                DateTimePicker::make('end_time')->required(),
-                DateTimePicker::make('registration_deadline')->required(),
+                DateTimePicker::make('end_time')->required()->after('start_time'),
+                DateTimePicker::make('registration_deadline')
+                    ->required()
+                    ->before('start_time')
+                    // A new competition with a deadline already passed could never take registrations.
+                    ->rule('after:now', fn (string $operation): bool => $operation === 'create'),
                 TextInput::make('max_participants')->numeric()->minValue(1),
                 Select::make('registration_mode')
                     ->options([

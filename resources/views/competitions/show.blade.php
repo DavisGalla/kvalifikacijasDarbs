@@ -18,6 +18,9 @@
                         <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-50 dark:bg-amber-900/20 px-3 py-1 text-sm font-semibold text-amber-700 dark:text-amber-400">
                             🏆 Winner: {{ $competition->winner->name }}
                         </p>
+                        @if ($competition->winner_method === 'manual')
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Chosen by the organizer: {{ $competition->winner_note }}</p>
+                        @endif
                     @endif
                 </div>
 

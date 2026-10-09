@@ -23,6 +23,8 @@ class Competition extends Model
         'max_team_members',
         'winner_type',
         'winner_id',
+        'winner_method',
+        'winner_note',
         'status',
     ];
 
@@ -98,6 +100,33 @@ class Competition extends Model
     {
         return $this->organizer_id === $user->id
             || $this->officials()->whereKey($user->id)->exists();
+    }
+
+    public function hasStarted(): bool
+    {
+        return $this->start_time->isPast();
+    }
+
+    public function hasFinished(): bool
+    {
+        return $this->end_time->isPast();
+    }
+
+    /**
+     * Results and matchups describe what happened, so they can be entered once a published
+     * competition has started (and corrected after it has finished), never before.
+     */
+    public function acceptsResults(): bool
+    {
+        return $this->status === 'published' && $this->hasStarted();
+    }
+
+    /**
+     * The winner is only decided once the competition is over.
+     */
+    public function canDecideWinner(): bool
+    {
+        return $this->status === 'published' && $this->hasFinished();
     }
 
     /**

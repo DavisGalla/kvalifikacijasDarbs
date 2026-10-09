@@ -24,7 +24,19 @@ class ResultForm
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->live(),
+                    ->live()
+                    ->rules([
+                        // Same lifecycle as the organizer's results page: only once the competition has started.
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                            $competition = Competition::find($value);
+
+                            try {
+                                $competition && app(CompetitionResults::class)->assertAcceptsResults($competition);
+                            } catch (CompetitionRuleException $e) {
+                                $fail($e->getMessage());
+                            }
+                        },
+                    ]),
                 Select::make('registrant_type')
                     ->options([
                         'user' => 'User',

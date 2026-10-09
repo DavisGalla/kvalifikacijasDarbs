@@ -21,7 +21,8 @@ class StoreCompetitionRequest extends FormRequest
             'location' => ['required', 'string', 'max:255'],
             'start_time' => ['required', 'date', 'after:now'],
             'end_time' => ['required', 'date', 'after:start_time'],
-            'registration_deadline' => ['required', 'date', 'before:start_time'],
+            // A deadline already in the past would publish a competition nobody can register for.
+            'registration_deadline' => ['required', 'date', 'after:now', 'before:start_time'],
             'max_participants' => ['nullable', 'integer', 'min:1'],
             'registration_mode' => ['required', Rule::in(['individual', 'team'])],
             'min_team_members' => ['nullable', 'integer', 'min:1', 'required_if:registration_mode,team'],
